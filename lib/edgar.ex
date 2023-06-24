@@ -130,8 +130,10 @@ defmodule EDGAR do
   @doc false
   def get(url) do
     SimpleRateLimiter.wait_and_proceed(fn ->
+      user_agent = Application.get_env(:edgar_client, :user_agent, "default <default@default.com>")
+
       resp =
-        HTTPoison.get(url, [{"User-Agent", "example <example@example.com>"}],
+        HTTPoison.get(url, [{"User-Agent", user_agent}],
           follow_redirect: true
         )
 
