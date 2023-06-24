@@ -17,7 +17,7 @@ defmodule EDGAR do
   @doc """
   Fetches the entity directory
 
-    ## Examples
+  ## Examples
 
       iex> {:ok, entity_directory} = EDGAR.get_entity_directory("320193")
       iex> entity_directory.directory.name
@@ -33,7 +33,7 @@ defmodule EDGAR do
   @doc """
   Fetches the filing directory
 
-    ## Examples
+  ## Examples
 
       iex> {:ok, filing_directory} = EDGAR.get_filing_directory("320193", "000032019320000010")
       iex> filing_directory.directory.name
@@ -49,7 +49,7 @@ defmodule EDGAR do
   @doc """
   Fetches a list of company tickers
 
-    ## Examples
+  ## Examples
 
       iex> {:ok, company_tickers} = EDGAR.get_company_tickers()
       iex> Enum.count(company_tickers) > 0
@@ -68,7 +68,7 @@ defmodule EDGAR do
   @doc """
   Fetches submissions for a given CIK
 
-    ## Examples
+  ## Examples
 
       iex> {:ok, submissions} = EDGAR.get_submissions("320193")
       iex> submissions.cik
@@ -84,7 +84,7 @@ defmodule EDGAR do
   @doc """
   Fetches company facts for a given CIK
 
-    ## Examples
+  ## Examples
 
       iex> {:ok, company_facts} = EDGAR.get_company_facts("320193")
       iex> company_facts.cik
@@ -100,7 +100,7 @@ defmodule EDGAR do
   @doc """
   Fetches company concepts for a given CIK and concept (taxonomy, tag)
 
-    ## Examples
+  ## Examples
 
       iex> {:ok, company_concept} = EDGAR.get_company_concept("320193", "us-gaap", "AccountsPayableCurrent")
       iex> company_concept.cik
@@ -116,7 +116,7 @@ defmodule EDGAR do
   @doc """
   Fetches frames for a given taxonomy, concept, unit, and period
 
-    ## Examples
+  ## Examples
 
       iex> {:ok, frames} = EDGAR.get_frames("us-gaap", "AccountsPayableCurrent", "USD", "CY2019Q1I")
       iex> frames.tag
@@ -127,17 +127,7 @@ defmodule EDGAR do
     |> get()
   end
 
-  @doc """
-  Makes a GET request to the specified URL, returns parsed JSON body if successful
-  The request is rate limited to 10 requests per second to avoid hitting the SEC rate limit
-  The User-Agent header is set to abide by the Internet Security Policy.
-
-  ## Examples
-
-    iex> {:ok, company_facts} = EDGAR.get("https://data.sec.gov/api/xbrl/companyfacts/CIK0000320193.json")
-    iex> company_facts.cik
-    320193
-  """
+  @doc false
   def get(url) do
     SimpleRateLimiter.wait_and_proceed(fn ->
       resp =

@@ -27,7 +27,8 @@ defmodule EDGAR.MixProject do
     [
       {:httpoison, "~> 2.1"},
       {:jason, "~> 1.4"},
-      {:simple_rate_limiter, "~> 0.2.0"}
+      {:simple_rate_limiter, "~> 0.2.0"},
+      {:ex_doc, "~> 0.24", only: :dev, runtime: false}
     ]
   end
 
