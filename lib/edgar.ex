@@ -1,25 +1,25 @@
-defmodule EDGARClient do
+defmodule EDGAR do
   use Application
+
+  @edgar_archives_url "https://www.sec.gov/Archives/edgar"
+  @edgar_data_url "https://data.sec.gov"
+  @edgar_files_url "https://www.sec.gov/files"
 
   def start(_type, _args) do
     children = [
       {SimpleRateLimiter, interval: 1_000, max: 10}
     ]
 
-    opts = [strategy: :one_for_one, name: EDGARClient.Supervisor]
+    opts = [strategy: :one_for_one, name: EDGAR.Supervisor]
     Supervisor.start_link(children, opts)
   end
-
-  @edgar_archives_url "https://www.sec.gov/Archives/edgar"
-  @edgar_data_url "https://data.sec.gov"
-  @edgar_files_url "https://www.sec.gov/files"
 
   @doc """
   Fetches the entity directory
 
     ## Examples
 
-      iex> {:ok, entity_directory} = EDGARClient.get_entity_directory("320193")
+      iex> {:ok, entity_directory} = EDGAR.get_entity_directory("320193")
       iex> entity_directory.directory.name
       "/Archives/edgar/data/320193"
   """
@@ -27,7 +27,7 @@ defmodule EDGARClient do
     cik = String.pad_leading(cik, 10, "0")
 
     "#{@edgar_archives_url}/data/#{cik}/index.json"
-    |> EDGARClient.get()
+    |> get()
   end
 
   @doc """
@@ -35,7 +35,7 @@ defmodule EDGARClient do
 
     ## Examples
 
-      iex> {:ok, filing_directory} = EDGARClient.get_filing_directory("320193", "000032019320000010")
+      iex> {:ok, filing_directory} = EDGAR.get_filing_directory("320193", "000032019320000010")
       iex> filing_directory.directory.name
       "/Archives/edgar/data/320193/000032019320000010"
   """
@@ -43,7 +43,7 @@ defmodule EDGARClient do
     accession_number = String.replace(accession_number, "-", "")
 
     "#{@edgar_archives_url}/data/#{cik}/#{accession_number}/index.json"
-    |> EDGARClient.get()
+    |> get()
   end
 
   @doc """
@@ -51,12 +51,12 @@ defmodule EDGARClient do
 
     ## Examples
 
-      iex> {:ok, company_tickers} = EDGARClient.get_company_tickers()
+      iex> {:ok, company_tickers} = EDGAR.get_company_tickers()
       iex> Enum.count(company_tickers) > 0
       true
   """
   def get_company_tickers() do
-    resp = EDGARClient.get("#{@edgar_files_url}/company_tickers.json")
+    resp = get("#{@edgar_files_url}/company_tickers.json")
     case resp do
       {:ok, result} ->
         {:ok, Map.values(result)}
@@ -70,7 +70,7 @@ defmodule EDGARClient do
 
     ## Examples
 
-      iex> {:ok, submissions} = EDGARClient.get_submissions("320193")
+      iex> {:ok, submissions} = EDGAR.get_submissions("320193")
       iex> submissions.cik
       "320193"
   """
@@ -78,7 +78,7 @@ defmodule EDGARClient do
     cik = String.pad_leading(cik, 10, "0")
 
     "#{@edgar_data_url}/submissions/CIK#{cik}.json"
-    |> EDGARClient.get()
+    |> get()
   end
 
   @doc """
@@ -86,7 +86,7 @@ defmodule EDGARClient do
 
     ## Examples
 
-      iex> {:ok, company_facts} = EDGARClient.get_company_facts("320193")
+      iex> {:ok, company_facts} = EDGAR.get_company_facts("320193")
       iex> company_facts.cik
       320193
   """
@@ -94,7 +94,7 @@ defmodule EDGARClient do
     cik = String.pad_leading(cik, 10, "0")
 
     "#{@edgar_data_url}/api/xbrl/companyfacts/CIK#{cik}.json"
-    |> EDGARClient.get()
+    |> get()
   end
 
   @doc """
@@ -102,7 +102,7 @@ defmodule EDGARClient do
 
     ## Examples
 
-      iex> {:ok, company_concept} = EDGARClient.get_company_concept("320193", "us-gaap", "AccountsPayableCurrent")
+      iex> {:ok, company_concept} = EDGAR.get_company_concept("320193", "us-gaap", "AccountsPayableCurrent")
       iex> company_concept.cik
       320193
   """
@@ -110,7 +110,7 @@ defmodule EDGARClient do
     cik = String.pad_leading(cik, 10, "0")
 
     "#{@edgar_data_url}/api/xbrl/companyconcept/CIK#{cik}/#{taxonomy}/#{tag}.json"
-    |> EDGARClient.get()
+    |> get()
   end
 
   @doc """
@@ -118,13 +118,13 @@ defmodule EDGARClient do
 
     ## Examples
 
-      iex> {:ok, frames} = EDGARClient.get_frames("us-gaap", "AccountsPayableCurrent", "USD", "CY2019Q1I")
+      iex> {:ok, frames} = EDGAR.get_frames("us-gaap", "AccountsPayableCurrent", "USD", "CY2019Q1I")
       iex> frames.tag
       "AccountsPayableCurrent"
   """
   def get_frames(taxonomy, tag, unit, period) do
     "#{@edgar_data_url}/api/xbrl/frames/#{taxonomy}/#{tag}/#{unit}/#{period}.json"
-    |> EDGARClient.get()
+    |> get()
   end
 
   @doc """
@@ -134,7 +134,7 @@ defmodule EDGARClient do
 
   ## Examples
 
-    iex> {:ok, company_facts} = EDGARClient.get("https://data.sec.gov/api/xbrl/companyfacts/CIK0000320193.json")
+    iex> {:ok, company_facts} = EDGAR.get("https://data.sec.gov/api/xbrl/companyfacts/CIK0000320193.json")
     iex> company_facts.cik
     320193
   """

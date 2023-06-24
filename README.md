@@ -1,11 +1,10 @@
-# EdgarClient
+# EDGAR
 
-**TODO: Add description**
+`EDGAR` is a client for the SEC's EDGAR system.
 
 ## Installation
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `edgar_client` to your list of dependencies in `mix.exs`:
+`EDGAR` is available on Hex. Add it to your list of dependencies in mix.exs:
 
 ```elixir
 def deps do
@@ -14,8 +13,3 @@ def deps do
   ]
 end
 ```
-
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at <https://hexdocs.pm/edgar_client>.
-
