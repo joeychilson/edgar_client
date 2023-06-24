@@ -30,6 +30,17 @@ defmodule EDGARTest do
     assert Enum.count(company_tickers) > 0
   end
 
+  test "cik for ticker found" do
+    cik = EDGAR.get_cik_for_ticker("AAPL")
+    assert {:ok, cik} = cik
+    assert cik == "320193"
+  end
+
+  test "cik for ticker not found" do
+    cik = EDGAR.get_cik_for_ticker("1")
+    assert {:error, :not_found} = cik
+  end
+
   test "submissions found" do
     submissions = EDGAR.get_submissions("320193")
     assert {:ok, submissions} = submissions

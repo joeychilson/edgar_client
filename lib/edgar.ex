@@ -57,11 +57,42 @@ defmodule EDGAR do
   """
   def get_company_tickers() do
     resp = get("#{@edgar_files_url}/company_tickers.json")
+
     case resp do
       {:ok, result} ->
         {:ok, Map.values(result)}
+
       _ ->
         resp
+    end
+  end
+
+  @doc """
+  Fetches a CIK for a given ticker
+
+  ## Examples
+
+      iex> {:ok, cik} = EDGAR.get_cik_for_ticker("AAPL")
+      iex> cik
+      "320193"
+  """
+  def get_cik_for_ticker(ticker) do
+    ticker = String.upcase(ticker)
+
+    case get_company_tickers() do
+      {:ok, tickers} ->
+        ticker_data = Enum.find(tickers, fn t -> t[:ticker] == ticker end)
+
+        case ticker_data do
+          nil ->
+            {:error, :not_found}
+
+          _ ->
+            {:ok, Integer.to_string(ticker_data[:cik_str])}
+        end
+
+      {:error, _} = error ->
+        error
     end
   end
 
@@ -130,12 +161,11 @@ defmodule EDGAR do
   @doc false
   def get(url) do
     SimpleRateLimiter.wait_and_proceed(fn ->
-      user_agent = Application.get_env(:edgar_client, :user_agent, "default <default@default.com>")
+      user_agent =
+        Application.get_env(:edgar_client, :user_agent, "default <default@default.com>")
 
       resp =
-        HTTPoison.get(url, [{"User-Agent", user_agent}],
-          follow_redirect: true
-        )
+        HTTPoison.get(url, [{"User-Agent", user_agent}], follow_redirect: true)
 
       case resp do
         {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
