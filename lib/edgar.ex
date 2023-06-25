@@ -159,7 +159,7 @@ defmodule EDGAR do
   end
 
   @doc false
-  def get(url) do
+  defp get(url) do
     SimpleRateLimiter.wait_and_proceed(fn ->
       user_agent =
         Application.get_env(:edgar_client, :user_agent, "default <default@default.com>")
