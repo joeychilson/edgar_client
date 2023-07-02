@@ -24,7 +24,7 @@ defmodule EDGAR do
   ## Examples
 
     iex> {:ok, entity_directory} = EDGAR.entity_directory("320193")
-    iex> entity_directory.directory.name
+    iex> entity_directory["directory"]["name"]
     "/Archives/edgar/data/320193"
   """
   def entity_directory(cik) do
@@ -45,7 +45,7 @@ defmodule EDGAR do
   ## Examples
 
     iex> {:ok, filing_directory} = EDGAR.filing_directory("320193", "000032019320000010")
-    iex> filing_directory.directory.name
+    iex> filing_directory["directory"]["name"]
     "/Archives/edgar/data/320193/000032019320000010"
   """
   def filing_directory(cik, accession_number) do
@@ -94,14 +94,14 @@ defmodule EDGAR do
 
     case company_tickers() do
       {:ok, tickers} ->
-        ticker_data = Enum.find(tickers, fn t -> t[:ticker] == ticker end)
+        ticker_data = Enum.find(tickers, fn t -> t["ticker"] == ticker end)
 
         case ticker_data do
           nil ->
             {:error, :not_found}
 
           _ ->
-            {:ok, Integer.to_string(ticker_data[:cik_str])}
+            {:ok, Integer.to_string(ticker_data["cik_str"])}
         end
 
       {:error, _} = error ->
@@ -119,7 +119,7 @@ defmodule EDGAR do
   ## Examples
 
     iex> {:ok, submissions} = EDGAR.submissions("320193")
-    iex> submissions.cik
+    iex> submissions["cik"]
     "320193"
   """
   def submissions(cik) do
@@ -139,7 +139,7 @@ defmodule EDGAR do
   ## Examples
 
     iex> {:ok, company_facts} = EDGAR.company_facts("320193")
-    iex> company_facts.cik
+    iex> company_facts["cik"]
     320193
   """
   def company_facts(cik) do
@@ -161,7 +161,7 @@ defmodule EDGAR do
   ## Examples
 
     iex> {:ok, company_concept} = EDGAR.company_concept("320193", "us-gaap", "AccountsPayableCurrent")
-    iex> company_concept.cik
+    iex> company_concept["cik"]
     320193
   """
   def company_concept(cik, taxonomy, tag) do
@@ -184,7 +184,7 @@ defmodule EDGAR do
   ## Examples
 
     iex> {:ok, frames} = EDGAR.frames("us-gaap", "AccountsPayableCurrent", "USD", "CY2019Q1I")
-    iex> frames.tag
+    iex> frames["tag"]
     "AccountsPayableCurrent"
   """
   def frames(taxonomy, tag, unit, period) do
