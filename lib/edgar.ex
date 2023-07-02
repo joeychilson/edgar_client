@@ -277,6 +277,31 @@ defmodule EDGAR do
     end
   end
 
+  @doc """
+  Parses a 13F filing primary document
+
+  ## Required
+
+  * `document` - The document to parse
+
+  """
+  def parse_13f_document(document) do
+    EDGAR.Native.parse_13f_document(document)
+  end
+
+  @doc """
+
+  Parses a 13F filing table
+
+  ## Required
+
+  * `table` - The table to parse
+
+  """
+  def parse_13f_table(table) do
+    EDGAR.Native.parse_13f_table(table)
+  end
+
   @doc false
   defp get(url) do
     SimpleRateLimiter.wait_and_proceed(fn ->

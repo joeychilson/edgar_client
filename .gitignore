@@ -27,3 +27,6 @@ edgar_client-*.tar
 
 # Language server
 /.elixir_ls/
+
+# Ignore the generated "native" dir from Rustler
+/priv/native/

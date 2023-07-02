@@ -28,6 +28,8 @@ defmodule EDGAR.MixProject do
       {:httpoison, "~> 2.1"},
       {:jason, "~> 1.4"},
       {:simple_rate_limiter, "~> 1.0"},
+      {:rustler, ">= 0.29.0", optional: true},
+      {:rustler_precompiled, "~> 0.6"},
       {:ex_doc, "~> 0.24", only: :dev, runtime: false}
     ]
   end
