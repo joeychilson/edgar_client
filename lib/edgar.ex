@@ -17,13 +17,17 @@ defmodule EDGAR do
   @doc """
   Fetches the entity directory
 
+  ## Required
+
+  * `cik` - The CIK of the entity
+
   ## Examples
 
-      iex> {:ok, entity_directory} = EDGAR.get_entity_directory("320193")
-      iex> entity_directory.directory.name
-      "/Archives/edgar/data/320193"
+    iex> {:ok, entity_directory} = EDGAR.entity_directory("320193")
+    iex> entity_directory.directory.name
+    "/Archives/edgar/data/320193"
   """
-  def get_entity_directory(cik) do
+  def entity_directory(cik) do
     cik = String.pad_leading(cik, 10, "0")
 
     "#{@edgar_archives_url}/data/#{cik}/index.json"
@@ -33,13 +37,18 @@ defmodule EDGAR do
   @doc """
   Fetches the filing directory
 
+  ## Required
+
+  * `cik` - The CIK of the entity
+  * `accession_number` - The accession number of the filing
+
   ## Examples
 
-      iex> {:ok, filing_directory} = EDGAR.get_filing_directory("320193", "000032019320000010")
-      iex> filing_directory.directory.name
-      "/Archives/edgar/data/320193/000032019320000010"
+    iex> {:ok, filing_directory} = EDGAR.filing_directory("320193", "000032019320000010")
+    iex> filing_directory.directory.name
+    "/Archives/edgar/data/320193/000032019320000010"
   """
-  def get_filing_directory(cik, accession_number) do
+  def filing_directory(cik, accession_number) do
     accession_number = String.replace(accession_number, "-", "")
 
     "#{@edgar_archives_url}/data/#{cik}/#{accession_number}/index.json"
@@ -51,11 +60,11 @@ defmodule EDGAR do
 
   ## Examples
 
-      iex> {:ok, company_tickers} = EDGAR.get_company_tickers()
-      iex> Enum.count(company_tickers) > 0
-      true
+    iex> {:ok, company_tickers} = EDGAR.company_tickers()
+    iex> Enum.count(company_tickers) > 0
+    true
   """
-  def get_company_tickers() do
+  def company_tickers() do
     resp = get("#{@edgar_files_url}/company_tickers.json")
 
     case resp do
@@ -70,16 +79,20 @@ defmodule EDGAR do
   @doc """
   Fetches a CIK for a given ticker
 
+  ## Required
+
+  * `ticker` - The ticker of the company
+
   ## Examples
 
-      iex> {:ok, cik} = EDGAR.get_cik_for_ticker("AAPL")
-      iex> cik
-      "320193"
+    iex> {:ok, cik} = EDGAR.cik_for_ticker("AAPL")
+    iex> cik
+    "320193"
   """
-  def get_cik_for_ticker(ticker) do
+  def cik_for_ticker(ticker) do
     ticker = String.upcase(ticker)
 
-    case get_company_tickers() do
+    case company_tickers() do
       {:ok, tickers} ->
         ticker_data = Enum.find(tickers, fn t -> t[:ticker] == ticker end)
 
@@ -99,13 +112,17 @@ defmodule EDGAR do
   @doc """
   Fetches submissions for a given CIK
 
+  ## Required
+
+  * `cik` - The CIK of the entity
+
   ## Examples
 
-      iex> {:ok, submissions} = EDGAR.get_submissions("320193")
-      iex> submissions.cik
-      "320193"
+    iex> {:ok, submissions} = EDGAR.submissions("320193")
+    iex> submissions.cik
+    "320193"
   """
-  def get_submissions(cik) do
+  def submissions(cik) do
     cik = String.pad_leading(cik, 10, "0")
 
     "#{@edgar_data_url}/submissions/CIK#{cik}.json"
@@ -115,13 +132,17 @@ defmodule EDGAR do
   @doc """
   Fetches company facts for a given CIK
 
+  ## Required
+
+  * `cik` - The CIK of the entity
+
   ## Examples
 
-      iex> {:ok, company_facts} = EDGAR.get_company_facts("320193")
-      iex> company_facts.cik
-      320193
+    iex> {:ok, company_facts} = EDGAR.company_facts("320193")
+    iex> company_facts.cik
+    320193
   """
-  def get_company_facts(cik) do
+  def company_facts(cik) do
     cik = String.pad_leading(cik, 10, "0")
 
     "#{@edgar_data_url}/api/xbrl/companyfacts/CIK#{cik}.json"
@@ -131,13 +152,19 @@ defmodule EDGAR do
   @doc """
   Fetches company concepts for a given CIK and concept (taxonomy, tag)
 
+  ## Required
+
+  * `cik` - The CIK of the entity
+  * `taxonomy` - The taxonomy of the concept
+  * `tag` - The tag of the concept
+
   ## Examples
 
-      iex> {:ok, company_concept} = EDGAR.get_company_concept("320193", "us-gaap", "AccountsPayableCurrent")
-      iex> company_concept.cik
-      320193
+    iex> {:ok, company_concept} = EDGAR.company_concept("320193", "us-gaap", "AccountsPayableCurrent")
+    iex> company_concept.cik
+    320193
   """
-  def get_company_concept(cik, taxonomy, tag) do
+  def company_concept(cik, taxonomy, tag) do
     cik = String.pad_leading(cik, 10, "0")
 
     "#{@edgar_data_url}/api/xbrl/companyconcept/CIK#{cik}/#{taxonomy}/#{tag}.json"
@@ -147,15 +174,107 @@ defmodule EDGAR do
   @doc """
   Fetches frames for a given taxonomy, concept, unit, and period
 
+  ## Required
+
+  * `taxonomy` - The taxonomy of the concept
+  * `tag` - The tag of the concept
+  * `unit` - The unit of the concept
+  * `period` - The period of the concept
+
   ## Examples
 
-      iex> {:ok, frames} = EDGAR.get_frames("us-gaap", "AccountsPayableCurrent", "USD", "CY2019Q1I")
-      iex> frames.tag
-      "AccountsPayableCurrent"
+    iex> {:ok, frames} = EDGAR.frames("us-gaap", "AccountsPayableCurrent", "USD", "CY2019Q1I")
+    iex> frames.tag
+    "AccountsPayableCurrent"
   """
-  def get_frames(taxonomy, tag, unit, period) do
+  def frames(taxonomy, tag, unit, period) do
     "#{@edgar_data_url}/api/xbrl/frames/#{taxonomy}/#{tag}/#{unit}/#{period}.json"
     |> get()
+  end
+
+  @doc """
+  Fetches a list of filings from the submissions file
+
+  ## Required
+
+  * `cik` - The CIK of the entity
+
+  ## Examples
+
+    iex> {:ok, filings} = EDGAR.filings("320193")
+    iex> Enum.count(filings) > 0
+    true
+  """
+  def filings(cik) do
+    case submissions(cik) do
+      {:ok, submissions} ->
+        recent_filings = submissions["filings"]["recent"]
+
+        formatted_recent_filings = format_filings(recent_filings)
+
+        files = submissions["filings"]["files"]
+
+        formatted_file_filings =
+          Enum.flat_map(files, fn file ->
+            file_name = file["name"]
+            {:ok, file_data} = get("#{@edgar_data_url}/submissions/#{file_name}")
+            format_filings(file_data)
+          end)
+
+        {:ok, formatted_recent_filings ++ formatted_file_filings}
+
+      {:error, _} = error ->
+        error
+    end
+  end
+
+  @doc false
+  defp format_filings(filings) do
+    field_names = [
+      "acceptanceDateTime",
+      "accessionNumber",
+      "act",
+      "fileNumber",
+      "form",
+      "isInlineXBRL",
+      "isXBRL",
+      "items",
+      "primaryDocDescription",
+      "primaryDocument",
+      "reportDate",
+      "size"
+    ]
+
+    file_field_values = for name <- field_names, do: Map.get(filings, name)
+
+    Enum.zip(file_field_values)
+    |> Enum.map(fn tuple ->
+      Map.new(Enum.zip(field_names, Tuple.to_list(tuple)))
+    end)
+  end
+
+  @doc """
+  Fetches a list of filings from the submissions file by form
+
+  ## Required
+
+  * `cik` - The CIK of the entity
+  * `forms` - The forms to filter by
+
+  ## Examples
+
+    iex> {:ok, filings} = EDGAR.filings_by_forms("320193", ["10-K", "10-Q"])
+    iex> Enum.count(filings) > 0
+    true
+  """
+  def filings_by_forms(cik, forms) do
+    case filings(cik) do
+      {:ok, filings} ->
+        {:ok, Enum.filter(filings, fn filing -> filing["form"] in forms end)}
+
+      {:error, _} = error ->
+        error
+    end
   end
 
   @doc false
@@ -169,7 +288,7 @@ defmodule EDGAR do
 
       case resp do
         {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
-          {:ok, Jason.decode!(body, keys: :atoms)}
+          {:ok, Jason.decode!(body)}
 
         {:ok, %HTTPoison.Response{status_code: 404}} ->
           {:error, :not_found}
