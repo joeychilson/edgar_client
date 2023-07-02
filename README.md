@@ -9,7 +9,7 @@
 ```elixir
 def deps do
   [
-    {:edgar_client, "~> 0.1.0"}
+    {:edgar_client, "~> 0.2.0"}
   ]
 end
 ```
