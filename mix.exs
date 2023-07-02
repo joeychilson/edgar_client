@@ -36,6 +36,14 @@ defmodule EDGAR.MixProject do
 
   defp package do
     [
+      files: [
+        "lib",
+        "native",
+        "checksum-*.exs",
+        "mix.exs",
+        "README.md",
+        "LICENSE"
+      ],
       licenses: ["MIT"],
       links: %{"GitHub" => "https://github.com/joeychilson/edgar_client"},
       maintainers: ["Joey Chilson"]
