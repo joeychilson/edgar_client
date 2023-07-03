@@ -20,18 +20,12 @@ defmodule EDGAR do
   ## Required
 
   * `cik` - The CIK of the entity
-
-  ## Examples
-
-    iex> {:ok, entity_directory} = EDGAR.entity_directory("320193")
-    iex> entity_directory["directory"]["name"]
-    "/Archives/edgar/data/320193"
   """
   def entity_directory(cik) do
     cik = String.pad_leading(cik, 10, "0")
 
     "#{@edgar_archives_url}/data/#{cik}/index.json"
-    |> get()
+    |> get_json()
   end
 
   @doc """
@@ -41,31 +35,19 @@ defmodule EDGAR do
 
   * `cik` - The CIK of the entity
   * `accession_number` - The accession number of the filing
-
-  ## Examples
-
-    iex> {:ok, filing_directory} = EDGAR.filing_directory("320193", "000032019320000010")
-    iex> filing_directory["directory"]["name"]
-    "/Archives/edgar/data/320193/000032019320000010"
   """
   def filing_directory(cik, accession_number) do
     accession_number = String.replace(accession_number, "-", "")
 
     "#{@edgar_archives_url}/data/#{cik}/#{accession_number}/index.json"
-    |> get()
+    |> get_json()
   end
 
   @doc """
   Fetches a list of company tickers
-
-  ## Examples
-
-    iex> {:ok, company_tickers} = EDGAR.company_tickers()
-    iex> Enum.count(company_tickers) > 0
-    true
   """
   def company_tickers() do
-    resp = get("#{@edgar_files_url}/company_tickers.json")
+    resp = get_json("#{@edgar_files_url}/company_tickers.json")
 
     case resp do
       {:ok, result} ->
@@ -82,12 +64,6 @@ defmodule EDGAR do
   ## Required
 
   * `ticker` - The ticker of the company
-
-  ## Examples
-
-    iex> {:ok, cik} = EDGAR.cik_for_ticker("AAPL")
-    iex> cik
-    "320193"
   """
   def cik_for_ticker(ticker) do
     ticker = String.upcase(ticker)
@@ -115,18 +91,12 @@ defmodule EDGAR do
   ## Required
 
   * `cik` - The CIK of the entity
-
-  ## Examples
-
-    iex> {:ok, submissions} = EDGAR.submissions("320193")
-    iex> submissions["cik"]
-    "320193"
   """
   def submissions(cik) do
     cik = String.pad_leading(cik, 10, "0")
 
     "#{@edgar_data_url}/submissions/CIK#{cik}.json"
-    |> get()
+    |> get_json()
   end
 
   @doc """
@@ -135,18 +105,12 @@ defmodule EDGAR do
   ## Required
 
   * `cik` - The CIK of the entity
-
-  ## Examples
-
-    iex> {:ok, company_facts} = EDGAR.company_facts("320193")
-    iex> company_facts["cik"]
-    320193
   """
   def company_facts(cik) do
     cik = String.pad_leading(cik, 10, "0")
 
     "#{@edgar_data_url}/api/xbrl/companyfacts/CIK#{cik}.json"
-    |> get()
+    |> get_json()
   end
 
   @doc """
@@ -157,18 +121,12 @@ defmodule EDGAR do
   * `cik` - The CIK of the entity
   * `taxonomy` - The taxonomy of the concept
   * `tag` - The tag of the concept
-
-  ## Examples
-
-    iex> {:ok, company_concept} = EDGAR.company_concept("320193", "us-gaap", "AccountsPayableCurrent")
-    iex> company_concept["cik"]
-    320193
   """
   def company_concept(cik, taxonomy, tag) do
     cik = String.pad_leading(cik, 10, "0")
 
     "#{@edgar_data_url}/api/xbrl/companyconcept/CIK#{cik}/#{taxonomy}/#{tag}.json"
-    |> get()
+    |> get_json()
   end
 
   @doc """
@@ -180,16 +138,10 @@ defmodule EDGAR do
   * `tag` - The tag of the concept
   * `unit` - The unit of the concept
   * `period` - The period of the concept
-
-  ## Examples
-
-    iex> {:ok, frames} = EDGAR.frames("us-gaap", "AccountsPayableCurrent", "USD", "CY2019Q1I")
-    iex> frames["tag"]
-    "AccountsPayableCurrent"
   """
   def frames(taxonomy, tag, unit, period) do
     "#{@edgar_data_url}/api/xbrl/frames/#{taxonomy}/#{tag}/#{unit}/#{period}.json"
-    |> get()
+    |> get_json()
   end
 
   @doc """
@@ -198,12 +150,6 @@ defmodule EDGAR do
   ## Required
 
   * `cik` - The CIK of the entity
-
-  ## Examples
-
-    iex> {:ok, filings} = EDGAR.filings("320193")
-    iex> Enum.count(filings) > 0
-    true
   """
   def filings(cik) do
     case submissions(cik) do
@@ -217,7 +163,7 @@ defmodule EDGAR do
         formatted_file_filings =
           Enum.flat_map(files, fn file ->
             file_name = file["name"]
-            {:ok, file_data} = get("#{@edgar_data_url}/submissions/#{file_name}")
+            {:ok, file_data} = get_json("#{@edgar_data_url}/submissions/#{file_name}")
             format_filings(file_data)
           end)
 
@@ -260,12 +206,6 @@ defmodule EDGAR do
 
   * `cik` - The CIK of the entity
   * `forms` - The forms to filter by
-
-  ## Examples
-
-    iex> {:ok, filings} = EDGAR.filings_by_forms("320193", ["10-K", "10-Q"])
-    iex> Enum.count(filings) > 0
-    true
   """
   def filings_by_forms(cik, forms) do
     case filings(cik) do
@@ -278,16 +218,87 @@ defmodule EDGAR do
   end
 
   @doc """
+
+  Parses a 13F filing for a given CIK and accession number
+
+  ## Required
+
+  * `cik` - The CIK of the entity
+  * `accession_number` - The accession number of the filing
+  """
+  def parse_13f_filing(cik, accession_number) do
+    case filing_directory(cik, accession_number) do
+      {:ok, dir} ->
+        files = dir["directory"]["item"]
+
+        primary_doc_file = Enum.find(files, fn file -> file["name"] == "primary_doc.xml" end)
+
+        table_xml_file =
+          Enum.find(files, fn file ->
+            file["name"] != "primary_doc.xml" and String.ends_with?(file["name"], ".xml")
+          end)
+
+        if primary_doc_file && table_xml_file do
+          acc_no = String.replace(accession_number, "-", "")
+
+          primary_doc_url =
+            "#{@edgar_archives_url}/data/#{cik}/#{acc_no}/#{primary_doc_file["name"]}"
+
+          table_xml_url =
+            "#{@edgar_archives_url}/data/#{cik}/#{acc_no}/#{table_xml_file["name"]}"
+
+          with {:ok, document} <- parse_13f_document_from_url(primary_doc_url),
+               {:ok, table} <- parse_13f_table_from_url(table_xml_url) do
+            {:ok, %{document: document, table: table}}
+          else
+            error -> error
+          end
+        else
+          {:error, "No primary_doc or table file found"}
+        end
+
+      {:error, _} = error ->
+        error
+    end
+  end
+
+  @doc """
+  Parses a 13F filing from a given url
+
+  ## Required
+
+  * `url` - The url of the 13F document filing
+
+  """
+  def parse_13f_document_from_url(url) do
+    with {:ok, body} <- get(url),
+         result <- parse_13f_document(body) do
+      result
+    end
+  end
+
+  @doc """
+  Parses a 13F filing table from a given url
+
+  ## Required
+
+  * `url` - The url of the 13F table filing
+  """
+  def parse_13f_table_from_url(url) do
+    with {:ok, body} <- get(url),
+         result <- parse_13f_table(body) do
+      result
+    end
+  end
+
+  @doc """
   Parses a 13F filing primary document
 
   ## Required
 
-  * `document` - The document to parse
-
+  * `document` - The document xml to parse
   """
-  def parse_13f_document(document) do
-    EDGAR.Native.parse_13f_document(document)
-  end
+  def parse_13f_document(document), do: EDGAR.Native.parse_13f_document(document)
 
   @doc """
 
@@ -295,11 +306,21 @@ defmodule EDGAR do
 
   ## Required
 
-  * `table` - The table to parse
-
+  * `table` - The table xml to parse
   """
-  def parse_13f_table(table) do
-    EDGAR.Native.parse_13f_table(table)
+  def parse_13f_table(table), do: EDGAR.Native.parse_13f_table(table)
+
+  @doc false
+  defp get_json(url) do
+    SimpleRateLimiter.wait_and_proceed(fn ->
+      case get(url) do
+        {:ok, body} ->
+          {:ok, Jason.decode!(body)}
+
+        {:error, _} = error ->
+          error
+      end
+    end)
   end
 
   @doc false
@@ -313,7 +334,7 @@ defmodule EDGAR do
 
       case resp do
         {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
-          {:ok, Jason.decode!(body)}
+          {:ok, body}
 
         {:ok, %HTTPoison.Response{status_code: 404}} ->
           {:error, :not_found}

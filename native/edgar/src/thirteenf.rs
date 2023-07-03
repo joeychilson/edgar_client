@@ -74,7 +74,7 @@ pub struct CoverPage {
     #[serde(rename = "reportCalendarOrQuarter")]
     report_calendar_or_quarter: String,
     #[serde(rename = "isAmendment")]
-    is_amendment: String,
+    is_amendment: Option<String>,
     #[serde(rename = "filingManager")]
     filing_manager: FilingManager,
     #[serde(rename = "reportType")]
@@ -88,7 +88,7 @@ pub struct CoverPage {
     #[serde(rename = "provideInfoForInstruction5")]
     provide_info_for_instruction5: String,
     #[serde(rename = "additionalInformation")]
-    additional_information: String,
+    additional_information: Option<String>,
 }
 
 #[derive(Debug, Deserialize, NifStruct)]
