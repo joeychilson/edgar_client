@@ -218,6 +218,58 @@ defmodule EDGAR do
   end
 
   @doc """
+  Parses a form 4 filing from a given CIK and accession number
+
+  ## Required
+
+  * `cik` - The CIK of the entity
+  * `accession_number` - The accession number of the filing
+  """
+  def parse_form4_filing(cik, accession_number) do
+    case filing_directory(cik, accession_number) do
+      {:ok, dir} ->
+        files = dir["directory"]["item"]
+
+        case Enum.find(files, fn file -> String.ends_with?(file["name"], ".xml") end) do
+          nil ->
+            {:error, "No xml file found"}
+
+          xml_file ->
+            acc_no = String.replace(accession_number, "-", "")
+            xml_file_url = "#{@edgar_archives_url}/data/#{cik}/#{acc_no}/#{xml_file["name"]}"
+
+            parse_form4_from_url(xml_file_url)
+        end
+
+      error ->
+        error
+    end
+  end
+
+  @doc """
+  Parses a form 4 filing from a given url
+
+  ## Required
+
+  * `url` - The url of the form 4 filing
+  """
+  def parse_form4_from_url(url) do
+    with {:ok, body} <- get(url),
+         result <- parse_form4(body) do
+      result
+    end
+  end
+
+  @doc """
+  Parses a form 4 filing
+
+  ## Required
+
+  * `document` - The document xml to parse
+  """
+  def parse_form4(document), do: EDGAR.Native.parse_form4(document)
+
+  @doc """
 
   Parses a 13F filing for a given CIK and accession number
 

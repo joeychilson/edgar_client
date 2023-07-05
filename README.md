@@ -9,7 +9,7 @@
 ```elixir
 def deps do
   [
-    {:edgar_client, "~> 0.3.0"}
+    {:edgar_client, "~> 0.4.0"}
   ]
 end
 ```
@@ -17,6 +17,14 @@ end
 ## Features
 
 - [x] Rate Limiting
+- [x] Getting company tickers
+- [x] Getting company information
+- [x] Getting company facts
+- [x] Getting company concepts
+- [x] Getting filings by CIK
+- [x] Getting filings by form Type
+- [x] Parsing 13F filings
+- [x] Parsing Form4 filings
 
 ## Configuration
 

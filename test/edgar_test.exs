@@ -86,4 +86,16 @@ defmodule EDGARTest do
     frames = EDGAR.frames("us-gaap", "AccountsPayableCurrent", "USD", "CY2019Q1")
     assert {:error, :not_found} = frames
   end
+
+  test "parsing 13f" do
+    form13 = EDGAR.parse_13f_filing("1067983", "000095012323005270")
+    assert {:ok, form13} = form13
+    assert form13.document.header.submission_type == "13F-HR"
+  end
+
+  test "parsing form4" do
+    form4 = EDGAR.parse_form4_filing("1295032", "000120919122003153")
+    assert {:ok, form4} = form4
+    assert form4.document_type == "4"
+  end
 end
