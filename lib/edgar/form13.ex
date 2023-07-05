@@ -1,4 +1,4 @@
-defmodule EDGAR.ThirteenF do
+defmodule EDGAR.Form13 do
   defmodule SignatureBlock do
     defstruct [:name, :title, :phone, :signature, :city, :state_or_country, :signature_date]
   end

@@ -25,6 +25,6 @@ defmodule EDGAR.Native do
     force_build: System.get_env("EDGAR_CLIENT_BUILD") in ["1", "true"]
 
   def parse_form4(_xml), do: :erlang.nif_error(:nif_not_loaded)
-  def parse_13f_document(_xml), do: :erlang.nif_error(:nif_not_loaded)
-  def parse_13f_table(_xml), do: :erlang.nif_error(:nif_not_loaded)
+  def parse_form13_document(_xml), do: :erlang.nif_error(:nif_not_loaded)
+  def parse_form13_table(_xml), do: :erlang.nif_error(:nif_not_loaded)
 end

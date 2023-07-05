@@ -271,14 +271,14 @@ defmodule EDGAR do
 
   @doc """
 
-  Parses a 13F filing for a given CIK and accession number
+  Parses a form 13F filing for a given CIK and accession number
 
   ## Required
 
   * `cik` - The CIK of the entity
   * `accession_number` - The accession number of the filing
   """
-  def parse_13f_filing(cik, accession_number) do
+  def parse_form13_filing(cik, accession_number) do
     case filing_directory(cik, accession_number) do
       {:ok, dir} ->
         files = dir["directory"]["item"]
@@ -299,8 +299,8 @@ defmodule EDGAR do
           table_xml_url =
             "#{@edgar_archives_url}/data/#{cik}/#{acc_no}/#{table_xml_file["name"]}"
 
-          with {:ok, document} <- parse_13f_document_from_url(primary_doc_url),
-               {:ok, table} <- parse_13f_table_from_url(table_xml_url) do
+          with {:ok, document} <- parse_form13_document_from_url(primary_doc_url),
+               {:ok, table} <- parse_form13_table_from_url(table_xml_url) do
             {:ok, %{document: document, table: table}}
           else
             error -> error
@@ -315,52 +315,52 @@ defmodule EDGAR do
   end
 
   @doc """
-  Parses a 13F filing from a given url
+  Parses a form 13F filing from a given url
 
   ## Required
 
-  * `url` - The url of the 13F document filing
+  * `url` - The url of the form 13F document filing
 
   """
-  def parse_13f_document_from_url(url) do
+  def parse_form13_document_from_url(url) do
     with {:ok, body} <- get(url),
-         result <- parse_13f_document(body) do
+         result <- parse_form13_document(body) do
       result
     end
   end
 
   @doc """
-  Parses a 13F filing table from a given url
+  Parses a form 13F filing table from a given url
 
   ## Required
 
-  * `url` - The url of the 13F table filing
+  * `url` - The url of the form 13F table filing
   """
-  def parse_13f_table_from_url(url) do
+  def parse_form13_table_from_url(url) do
     with {:ok, body} <- get(url),
-         result <- parse_13f_table(body) do
+         result <- parse_form13_table(body) do
       result
     end
   end
 
   @doc """
-  Parses a 13F filing primary document
+  Parses a form 13F filing primary document
 
   ## Required
 
   * `document` - The document xml to parse
   """
-  def parse_13f_document(document), do: EDGAR.Native.parse_13f_document(document)
+  def parse_form13_document(document), do: EDGAR.Native.parse_form13_document(document)
 
   @doc """
 
-  Parses a 13F filing table
+  Parses a form 13F filing table
 
   ## Required
 
   * `table` - The table xml to parse
   """
-  def parse_13f_table(table), do: EDGAR.Native.parse_13f_table(table)
+  def parse_form13_table(table), do: EDGAR.Native.parse_form13_table(table)
 
   @doc false
   defp get_json(url) do

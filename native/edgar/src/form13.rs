@@ -3,7 +3,7 @@ use rustler::NifStruct;
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.ThirteenF.Document"]
+#[module = "EDGAR.Form13.Document"]
 pub struct Document {
     #[serde(rename = "schemaVersion")]
     schema_version: String,
@@ -14,7 +14,7 @@ pub struct Document {
 }
 
 #[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.ThirteenF.Header"]
+#[module = "EDGAR.Form13.Header"]
 pub struct Header {
     #[serde(rename = "submissionType")]
     submission_type: String,
@@ -23,7 +23,7 @@ pub struct Header {
 }
 
 #[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.ThirteenF.FilerInfo"]
+#[module = "EDGAR.Form13.FilerInfo"]
 pub struct FilerInfo {
     #[serde(rename = "liveTestFlag")]
     live_test_flag: String,
@@ -34,7 +34,7 @@ pub struct FilerInfo {
 }
 
 #[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.ThirteenF.Flags"]
+#[module = "EDGAR.Form13.Flags"]
 pub struct Flags {
     #[serde(rename = "confirmingCopyFlag")]
     confirming_copy_flag: Option<String>,
@@ -45,20 +45,20 @@ pub struct Flags {
 }
 
 #[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.ThirteenF.Filer"]
+#[module = "EDGAR.Form13.Filer"]
 pub struct Filer {
     credentials: Credentials,
 }
 
 #[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.ThirteenF.Credentials"]
+#[module = "EDGAR.Form13.Credentials"]
 pub struct Credentials {
     pub cik: String,
     pub ccc: String,
 }
 
 #[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.ThirteenF.Form"]
+#[module = "EDGAR.Form13.Form"]
 pub struct Form {
     #[serde(rename = "coverPage")]
     cover_page: CoverPage,
@@ -69,7 +69,7 @@ pub struct Form {
 }
 
 #[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.ThirteenF.CoverPage"]
+#[module = "EDGAR.Form13.CoverPage"]
 pub struct CoverPage {
     #[serde(rename = "reportCalendarOrQuarter")]
     report_calendar_or_quarter: String,
@@ -92,14 +92,14 @@ pub struct CoverPage {
 }
 
 #[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.ThirteenF.FilingManager"]
+#[module = "EDGAR.Form13.FilingManager"]
 struct FilingManager {
     name: String,
     address: Address,
 }
 
 #[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.ThirteenF.Address"]
+#[module = "EDGAR.Form13.Address"]
 struct Address {
     #[serde(rename = "street1")]
     street1: String,
@@ -114,7 +114,7 @@ struct Address {
 }
 
 #[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.ThirteenF.SignatureBlock"]
+#[module = "EDGAR.Form13.SignatureBlock"]
 pub struct SignatureBlock {
     name: String,
     title: String,
@@ -128,7 +128,7 @@ pub struct SignatureBlock {
 }
 
 #[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.ThirteenF.SummaryPage"]
+#[module = "EDGAR.Form13.SummaryPage"]
 pub struct SummaryPage {
     #[serde(rename = "otherIncludedManagersCount")]
     other_included_managers_count: u32,
@@ -139,20 +139,20 @@ pub struct SummaryPage {
 }
 
 #[rustler::nif]
-pub fn parse_13f_document(xml: &str) -> Result<Document, ()> {
+pub fn parse_form13_document(xml: &str) -> Result<Document, ()> {
     let document: Document = from_str(xml).unwrap();
     Ok(document)
 }
 
 #[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.ThirteenF.Table"]
+#[module = "EDGAR.Form13.Table"]
 pub struct Table {
     #[serde(rename = "infoTable")]
     pub holdings: Vec<Holding>,
 }
 
 #[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.ThirteenF.Holding"]
+#[module = "EDGAR.Form13.Holding"]
 pub struct Holding {
     #[serde(rename = "nameOfIssuer")]
     pub name_of_issuer: String,
@@ -171,7 +171,7 @@ pub struct Holding {
 }
 
 #[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.ThirteenF.SharesOrPrintAmount"]
+#[module = "EDGAR.Form13.SharesOrPrintAmount"]
 pub struct SharesOrPrintAmount {
     #[serde(rename = "sshPrnamt")]
     pub shares_or_print_amount: i64,
@@ -180,7 +180,7 @@ pub struct SharesOrPrintAmount {
 }
 
 #[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.ThirteenF.VotingAuthority"]
+#[module = "EDGAR.Form13.VotingAuthority"]
 pub struct VotingAuthority {
     #[serde(rename = "Sole")]
     pub sole: i64,
@@ -191,7 +191,7 @@ pub struct VotingAuthority {
 }
 
 #[rustler::nif]
-pub fn parse_13f_table(xml: &str) -> Result<Table, ()> {
+pub fn parse_form13_table(xml: &str) -> Result<Table, ()> {
     let table: Table = from_str(xml).unwrap();
     Ok(table)
 }

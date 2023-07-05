@@ -23,8 +23,8 @@ end
 - [x] Getting company concepts
 - [x] Getting filings by CIK
 - [x] Getting filings by form Type
-- [x] Parsing 13F filings
-- [x] Parsing Form4 filings
+- [x] Parsing form13 filings
+- [x] Parsing form4 filings
 
 ## Configuration
 

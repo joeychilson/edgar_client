@@ -88,7 +88,7 @@ defmodule EDGARTest do
   end
 
   test "parsing 13f" do
-    form13 = EDGAR.parse_13f_filing("1067983", "000095012323005270")
+    form13 = EDGAR.parse_form13_filing("1067983", "000095012323005270")
     assert {:ok, form13} = form13
     assert form13.document.header.submission_type == "13F-HR"
   end
