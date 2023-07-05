@@ -139,8 +139,8 @@ pub struct SummaryPage {
 }
 
 #[rustler::nif]
-pub fn parse_form13_document(xml: &str) -> Result<Document, ()> {
-    let document: Document = from_str(xml).unwrap();
+pub fn parse_form13_document(xml: &str) -> Result<Document, String> {
+    let document: Document = from_str::<Document>(xml).map_err(|e| e.to_string())?;
     Ok(document)
 }
 
@@ -191,7 +191,7 @@ pub struct VotingAuthority {
 }
 
 #[rustler::nif]
-pub fn parse_form13_table(xml: &str) -> Result<Table, ()> {
-    let table: Table = from_str(xml).unwrap();
+pub fn parse_form13_table(xml: &str) -> Result<Table, String> {
+    let table: Table = from_str::<Table>(xml).map_err(|e| e.to_string())?;
     Ok(table)
 }

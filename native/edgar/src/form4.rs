@@ -229,7 +229,7 @@ pub struct OwnerSignature {
 }
 
 #[rustler::nif]
-pub fn parse_form4(xml: &str) -> Result<Document, ()> {
-    let document: Document = from_str(xml).unwrap();
+pub fn parse_form4(xml: &str) -> Result<Document, String> {
+    let document: Document = from_str::<Document>(xml).map_err(|e| e.to_string())?;
     Ok(document)
 }

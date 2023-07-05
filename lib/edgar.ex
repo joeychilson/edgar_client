@@ -225,7 +225,7 @@ defmodule EDGAR do
   * `cik` - The CIK of the entity
   * `accession_number` - The accession number of the filing
   """
-  def parse_form4_filing(cik, accession_number) do
+  def form4_filing(cik, accession_number) do
     case filing_directory(cik, accession_number) do
       {:ok, dir} ->
         files = dir["directory"]["item"]
@@ -238,7 +238,7 @@ defmodule EDGAR do
             acc_no = String.replace(accession_number, "-", "")
             xml_file_url = "#{@edgar_archives_url}/data/#{cik}/#{acc_no}/#{xml_file["name"]}"
 
-            parse_form4_from_url(xml_file_url)
+            form4_from_url(xml_file_url)
         end
 
       error ->
@@ -253,7 +253,7 @@ defmodule EDGAR do
 
   * `url` - The url of the form 4 filing
   """
-  def parse_form4_from_url(url) do
+  def form4_from_url(url) do
     with {:ok, body} <- get(url),
          result <- parse_form4(body) do
       result
@@ -278,7 +278,7 @@ defmodule EDGAR do
   * `cik` - The CIK of the entity
   * `accession_number` - The accession number of the filing
   """
-  def parse_form13_filing(cik, accession_number) do
+  def form13_filing(cik, accession_number) do
     case filing_directory(cik, accession_number) do
       {:ok, dir} ->
         files = dir["directory"]["item"]
@@ -299,8 +299,8 @@ defmodule EDGAR do
           table_xml_url =
             "#{@edgar_archives_url}/data/#{cik}/#{acc_no}/#{table_xml_file["name"]}"
 
-          with {:ok, document} <- parse_form13_document_from_url(primary_doc_url),
-               {:ok, table} <- parse_form13_table_from_url(table_xml_url) do
+          with {:ok, document} <- form13_document_from_url(primary_doc_url),
+               {:ok, table} <- form13_table_from_url(table_xml_url) do
             {:ok, %{document: document, table: table}}
           else
             error -> error
@@ -322,7 +322,7 @@ defmodule EDGAR do
   * `url` - The url of the form 13F document filing
 
   """
-  def parse_form13_document_from_url(url) do
+  def form13_document_from_url(url) do
     with {:ok, body} <- get(url),
          result <- parse_form13_document(body) do
       result
@@ -336,7 +336,7 @@ defmodule EDGAR do
 
   * `url` - The url of the form 13F table filing
   """
-  def parse_form13_table_from_url(url) do
+  def form13_table_from_url(url) do
     with {:ok, body} <- get(url),
          result <- parse_form13_table(body) do
       result
@@ -348,9 +348,9 @@ defmodule EDGAR do
 
   ## Required
 
-  * `document` - The document xml to parse
+  * `xml` - The document xml to parse
   """
-  def parse_form13_document(document), do: EDGAR.Native.parse_form13_document(document)
+  def parse_form13_document(xml), do: EDGAR.Native.parse_form13_document(xml)
 
   @doc """
 
@@ -358,9 +358,75 @@ defmodule EDGAR do
 
   ## Required
 
-  * `table` - The table xml to parse
+  * `xml` - The table xml to parse
   """
-  def parse_form13_table(table), do: EDGAR.Native.parse_form13_table(table)
+  def parse_form13_table(xml), do: EDGAR.Native.parse_form13_table(xml)
+
+  @doc """
+  Fetches the current feed for a given CIK
+
+  ## Optional
+
+  * `CIK` - The CIK of the entity
+  * `type` - The type of filing to filter by
+  * `company` - The company to filter by
+  * `dateb` - The date to filter by
+  * `owner` - The owner to filter by
+  * `start` - The start index of the filings to return
+  * `count` - The number of filings to return
+
+  """
+  def current_feed(opts \\ %{}) do
+    opts = Map.merge(%{output: "atom"}, opts)
+    url = "https://www.sec.gov/cgi-bin/browse-edgar?action=getcurrent&#{URI.encode_query(opts)}"
+
+    with {:ok, body} <- get(url),
+         result <- parse_current_feed(body) do
+      result
+    end
+  end
+
+  @doc """
+  Parses the current feed
+
+  ## Required
+
+  * `xml` - The RSS feed xml to parse
+  """
+  def parse_current_feed(xml), do: EDGAR.Native.parse_current_feed(xml)
+
+  @doc """
+  Fetches the company feed for a given CIK
+
+  ## Required
+
+  * `cik` - The CIK of the entity
+
+  ## Optional
+
+  * `type` - The type of filing to filter by
+  * `start` - The start index of the filings to return
+  * `count` - The number of filings to return
+
+  """
+  def company_feed(cik, opts \\ %{}) do
+    opts = Map.merge(%{output: "atom", CIK: cik}, opts)
+    url = "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&#{URI.encode_query(opts)}"
+
+    with {:ok, body} <- get(url),
+         result <- parse_company_feed(body) do
+      result
+    end
+  end
+
+  @doc """
+  Parses the company feed
+
+  ## Required
+
+  * `xml` - The RSS feed xml to parse
+  """
+  def parse_company_feed(xml), do: EDGAR.Native.parse_company_feed(xml)
 
   @doc false
   defp get_json(url) do

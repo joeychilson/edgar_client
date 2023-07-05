@@ -88,14 +88,26 @@ defmodule EDGARTest do
   end
 
   test "parsing 13f" do
-    form13 = EDGAR.parse_form13_filing("1067983", "000095012323005270")
+    form13 = EDGAR.form13_filing("1067983", "000095012323005270")
     assert {:ok, form13} = form13
     assert form13.document.header.submission_type == "13F-HR"
   end
 
   test "parsing form4" do
-    form4 = EDGAR.parse_form4_filing("1295032", "000120919122003153")
+    form4 = EDGAR.form4_filing("1295032", "000120919122003153")
     assert {:ok, form4} = form4
     assert form4.document_type == "4"
+  end
+
+  test "parsing company feed" do
+    company_feed = EDGAR.company_feed("0000002488")
+    assert {:ok, company_feed} = company_feed
+    assert company_feed.company_info.cik == "0000002488"
+  end
+
+  test "parsing current feed" do
+    current_feed = EDGAR.current_feed()
+    assert {:ok, current_feed} = current_feed
+    assert current_feed.author.name == "Webmaster"
   end
 end
