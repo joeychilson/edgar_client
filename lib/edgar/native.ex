@@ -7,7 +7,7 @@ defmodule EDGAR.Native do
 
   use RustlerPrecompiled,
     otp_app: :edgar_client,
-    crate: "edgar",
+    crate: "edgar_parser",
     version: version,
     base_url: "#{github_url}/releases/download/v#{version}",
     targets: ~w(

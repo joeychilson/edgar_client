@@ -1,11 +1,11 @@
 [package]
-name = "edgar"
+name = "edgar_parser"
 version = "0.1.0"
 authors = []
 edition = "2021"
 
 [lib]
-name = "edgar"
+name = "edgar_parser"
 path = "src/lib.rs"
 crate-type = ["cdylib"]
 
