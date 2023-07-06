@@ -1,21 +1,10 @@
 defmodule EDGAR.CompanyFeed do
   defmodule Feed do
-    defstruct [
-      :id,
-      :title,
-      :updated,
-      :author,
-      :company_info,
-      :entries,
-      :links
-    ]
+    defstruct [:id, :title, :updated, :author, :company_info, :entries, :links]
   end
 
   defmodule Author do
-    defstruct [
-      :email,
-      :name
-    ]
+    defstruct [:email, :name]
   end
 
   defmodule CompanyInfo do
@@ -36,41 +25,19 @@ defmodule EDGAR.CompanyFeed do
   end
 
   defmodule Addresses do
-    defstruct [
-      :addresses
-    ]
+    defstruct [:addresses]
   end
 
   defmodule Address do
-    defstruct [
-      :address_type,
-      :city,
-      :phone,
-      :state,
-      :street1,
-      :street2,
-      :zip
-    ]
+    defstruct [:address_type, :city, :phone, :state, :street1, :street2, :zip]
   end
 
   defmodule Entry do
-    defstruct [
-      :id,
-      :updated,
-      :title,
-      :category,
-      :content,
-      :summary,
-      :link
-    ]
+    defstruct [:id, :updated, :title, :category, :content, :summary, :link]
   end
 
   defmodule Category do
-    defstruct [
-      :label,
-      :scheme,
-      :term
-    ]
+    defstruct [:label, :scheme, :term]
   end
 
   defmodule Content do
@@ -90,17 +57,10 @@ defmodule EDGAR.CompanyFeed do
   end
 
   defmodule Link do
-    defstruct [
-      :href,
-      :rel,
-      :link_type
-    ]
+    defstruct [:href, :rel, :link_type]
   end
 
   defmodule Summary do
-    defstruct [
-      :summary_type,
-      :value
-    ]
+    defstruct [:summary_type, :value]
   end
 end

@@ -16,6 +16,7 @@ name = "edgar_parser"
 version = "0.1.0"
 dependencies = [
  "quick-xml",
+ "roxmltree",
  "rustler",
  "serde",
 ]
@@ -94,6 +95,15 @@ name = "regex-syntax"
 version = "0.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2ab07dc67230e4a4718e70fd5c20055a4334b121f1f9db8fe63ef39ce9b8c846"
+
+[[package]]
+name = "roxmltree"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "27824cdacc2666f494734bd7bd0d05124f3dea3199893fd67e37277220702643"
+dependencies = [
+ "xmlparser",
+]
 
 [[package]]
 name = "rustler"
@@ -179,3 +189,9 @@ name = "void"
 version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6a02e4885ed3bc0f2de90ea6dd45ebcbb66dacffe03547fadbb0eeae2770887d"
+
+[[package]]
+name = "xmlparser"
+version = "0.12.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "28df138f96b683cde1b62df4567176166d61283d7bac220ddee4a56b6cdd278d"

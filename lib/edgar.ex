@@ -363,6 +363,29 @@ defmodule EDGAR do
   def parse_form13_table(xml), do: EDGAR.Native.parse_form13_table(xml)
 
   @doc """
+  Parses a xbrl filing from a given url
+
+  ## Required
+
+  * `url` - The url of the xbrl filing
+  """
+  def xbrl_from_url(url) do
+    with {:ok, body} <- get(url),
+         result <- parse_xbrl(body) do
+      result
+    end
+  end
+
+  @doc """
+  Parses a XBRL file
+
+  ## Required
+
+  * `xml` - The XBRL xml to parse
+  """
+  def parse_xbrl(xml), do: EDGAR.Native.parse_xbrl(xml)
+
+  @doc """
   Fetches the current feed for a given CIK
 
   ## Optional

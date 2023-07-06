@@ -13,37 +13,19 @@ defmodule EDGAR.Form4 do
   end
 
   defmodule Issuer do
-    defstruct [
-      :cik,
-      :name,
-      :trading_symbol
-    ]
+    defstruct [:cik, :name, :trading_symbol]
   end
 
   defmodule ReportingOwner do
-    defstruct [
-      :id,
-      :address,
-      :relationship
-    ]
+    defstruct [:id, :address, :relationship]
   end
 
   defmodule ReportingOwnerID do
-    defstruct [
-      :cik,
-      :name
-    ]
+    defstruct [:cik, :name]
   end
 
   defmodule ReportingOwnerAddress do
-    defstruct [
-      :street_1,
-      :street_2,
-      :city,
-      :state,
-      :zip_code,
-      :state_description
-    ]
+    defstruct [:street_1, :street_2, :city, :state, :zip_code, :state_description]
   end
 
   defmodule ReportingOwnerRelationship do
@@ -58,17 +40,11 @@ defmodule EDGAR.Form4 do
   end
 
   defmodule NonDerivativeTable do
-    defstruct [
-      :transactions,
-      :holdings
-    ]
+    defstruct [:transactions, :holdings]
   end
 
   defmodule DerivativeTable do
-    defstruct [
-      :transactions,
-      :holdings
-    ]
+    defstruct [:transactions, :holdings]
   end
 
   defmodule Transaction do
@@ -100,76 +76,46 @@ defmodule EDGAR.Form4 do
   end
 
   defmodule StringValue do
-    defstruct [
-      :value
-    ]
+    defstruct [:value]
   end
 
   defmodule IntValue do
-    defstruct [
-      :value
-    ]
+    defstruct [:value]
   end
 
   defmodule FloatValue do
-    defstruct [
-      :value
-    ]
+    defstruct [:value]
   end
 
   defmodule TransactionCoding do
-    defstruct [
-      :form_type,
-      :code,
-      :equity_swap_involved
-    ]
+    defstruct [:form_type, :code, :equity_swap_involved]
   end
 
   defmodule TransactionAmounts do
-    defstruct [
-      :shares,
-      :price_per_share,
-      :acquired_disposed_code
-    ]
+    defstruct [:shares, :price_per_share, :acquired_disposed_code]
   end
 
   defmodule UnderlyingSecurity do
-    defstruct [
-      :title,
-      :shares
-    ]
+    defstruct [:title, :shares]
   end
 
   defmodule PostTransactionAmounts do
-    defstruct [
-      :shares_owned_following_transaction
-    ]
+    defstruct [:shares_owned_following_transaction]
   end
 
   defmodule OwnershipNature do
-    defstruct [
-      :direct_or_indirect_ownership,
-      :nature_of_ownership
-    ]
+    defstruct [:direct_or_indirect_ownership, :nature_of_ownership]
   end
 
   defmodule Footnote do
-    defstruct [
-      :id,
-      :text
-    ]
+    defstruct [:id, :text]
   end
 
   defmodule FootnoteAttributes do
-    defstruct [
-      :id
-    ]
+    defstruct [:id]
   end
 
   defmodule OwnerSignature do
-    defstruct [
-      :name,
-      :date
-    ]
+    defstruct [:name, :date]
   end
 end

@@ -110,4 +110,14 @@ defmodule EDGARTest do
     assert {:ok, current_feed} = current_feed
     assert current_feed.author.name == "Webmaster"
   end
+
+  test "parsing xbrl" do
+    xbrl =
+      EDGAR.xbrl_from_url(
+        "https://www.sec.gov/Archives/edgar/data/789019/000156459022026876/msft-10k_20220630_htm.xml"
+      )
+
+    assert {:ok, xbrl} = xbrl
+    assert hd(xbrl.facts).context.entity == "0000789019"
+  end
 end

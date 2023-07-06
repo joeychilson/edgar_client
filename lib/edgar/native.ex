@@ -29,4 +29,5 @@ defmodule EDGAR.Native do
   def parse_form4(_xml), do: :erlang.nif_error(:nif_not_loaded)
   def parse_form13_document(_xml), do: :erlang.nif_error(:nif_not_loaded)
   def parse_form13_table(_xml), do: :erlang.nif_error(:nif_not_loaded)
+  def parse_xbrl(_xml), do: :erlang.nif_error(:nif_not_loaded)
 end
