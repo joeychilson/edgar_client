@@ -111,6 +111,34 @@ defmodule EDGAR do
 
     "#{@edgar_data_url}/api/xbrl/companyfacts/CIK#{cik}.json"
     |> get_json()
+    |> transform_company_facts()
+  end
+
+  defp transform_company_facts({:ok, result}) do
+    facts = Map.get(result, "facts")
+
+    transformed_facts =
+      Enum.map(facts, fn {fact_type, fact_data} ->
+        fact_data_list =
+          Enum.map(fact_data, fn {concept, details} ->
+            units = Map.get(details, "units")
+
+            values =
+              Enum.flat_map(units, fn {unit_type, unit_data} ->
+                Enum.map(unit_data, &Map.put(&1, "unit", unit_type))
+              end)
+
+            Map.put(details, "values", values)
+            |> Map.drop(["units"])
+            |> Map.put("concept", concept)
+          end)
+
+        {fact_type, fact_data_list}
+      end)
+
+    transformed_data = Map.put(result, "facts", transformed_facts)
+
+    {:ok, transformed_data}
   end
 
   @doc """

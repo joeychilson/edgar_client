@@ -1,9 +1,8 @@
 use quick_xml::de::from_str;
-use rustler::NifStruct;
+use rustler::NifMap;
 use serde::Deserialize;
 
-#[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.Form4.Document"]
+#[derive(Debug, Deserialize, NifMap)]
 pub struct Document {
     #[serde(rename = "documentType")]
     document_type: String,
@@ -13,17 +12,16 @@ pub struct Document {
     #[serde(rename = "reportingOwner")]
     reporting_owner: ReportingOwner,
     #[serde(rename = "nonDerivativeTable")]
-    pub non_derivative_table: NonDerivativeTable,
+    non_derivative_table: Option<NonDerivativeTable>,
     #[serde(rename = "derivativeTable")]
-    pub derivative_table: DerivativeTable,
+    derivative_table: Option<DerivativeTable>,
     #[serde(rename = "remarks")]
-    pub remarks: String,
+    remarks: Option<String>,
     #[serde(rename = "ownerSignature")]
-    pub owner_signature: OwnerSignature,
+    owner_signature: OwnerSignature,
 }
 
-#[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.Form4.Issuer"]
+#[derive(Debug, Deserialize, NifMap)]
 pub struct Issuer {
     #[serde(rename = "issuerCik")]
     cik: String,
@@ -33,8 +31,7 @@ pub struct Issuer {
     trading_symbol: String,
 }
 
-#[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.Form4.ReportingOwner"]
+#[derive(Debug, Deserialize, NifMap)]
 pub struct ReportingOwner {
     #[serde(rename = "reportingOwnerId")]
     id: ReportingOwnerID,
@@ -44,8 +41,7 @@ pub struct ReportingOwner {
     relationship: ReportingOwnerRelationship,
 }
 
-#[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.Form4.ReportingOwnerID"]
+#[derive(Debug, Deserialize, NifMap)]
 pub struct ReportingOwnerID {
     #[serde(rename = "rptOwnerCik")]
     cik: String,
@@ -53,8 +49,7 @@ pub struct ReportingOwnerID {
     name: String,
 }
 
-#[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.Form4.ReportingOwnerAddress"]
+#[derive(Debug, Deserialize, NifMap)]
 pub struct ReportingOwnerAddress {
     #[serde(rename = "rptOwnerStreet1")]
     street_1: String,
@@ -70,8 +65,7 @@ pub struct ReportingOwnerAddress {
     state_description: Option<String>,
 }
 
-#[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.Form4.ReportingOwnerRelationship"]
+#[derive(Debug, Deserialize, NifMap)]
 pub struct ReportingOwnerRelationship {
     #[serde(rename = "isDirector")]
     is_director: bool,
@@ -87,8 +81,7 @@ pub struct ReportingOwnerRelationship {
     other_text: Option<String>,
 }
 
-#[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.Form4.NonDerivativeTable"]
+#[derive(Debug, Deserialize, NifMap)]
 pub struct NonDerivativeTable {
     #[serde(rename = "nonDerivativeTransaction")]
     pub transactions: Option<Vec<Transaction>>,
@@ -96,8 +89,7 @@ pub struct NonDerivativeTable {
     pub holdings: Option<Vec<Holding>>,
 }
 
-#[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.Form4.DerivativeTable"]
+#[derive(Debug, Deserialize, NifMap)]
 pub struct DerivativeTable {
     #[serde(rename = "derivativeTransaction")]
     pub transactions: Option<Vec<Transaction>>,
@@ -105,25 +97,24 @@ pub struct DerivativeTable {
     pub holdings: Option<Vec<Holding>>,
 }
 
-#[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.Form4.Transaction"]
+#[derive(Debug, Deserialize, NifMap)]
 pub struct Transaction {
     #[serde(rename = "securityTitle")]
-    pub security_title: StringValue,
+    pub security_title: Value,
     #[serde(rename = "conversionOrExercisePrice")]
-    pub conversion_or_exercise_price: Option<StringValue>,
+    pub conversion_or_exercise_price: Option<Value>,
     #[serde(rename = "transactionDate")]
-    pub date: StringValue,
+    pub date: Value,
     #[serde(rename = "deemedExecutionDate")]
-    pub deemed_execution_date: Option<StringValue>,
+    pub deemed_execution_date: Option<Value>,
     #[serde(rename = "transactionCoding")]
     pub coding: TransactionCoding,
     #[serde(rename = "transactionAmounts")]
     pub amounts: TransactionAmounts,
     #[serde(rename = "exerciseDate")]
-    pub exercise_date: Option<StringValue>,
+    pub exercise_date: Option<Value>,
     #[serde(rename = "expirationDate")]
-    pub expiration_date: Option<StringValue>,
+    pub expiration_date: Option<Value>,
     #[serde(rename = "underlyingSecurity")]
     pub underlying_security: Option<UnderlyingSecurity>,
     #[serde(rename = "postTransactionAmounts")]
@@ -132,17 +123,16 @@ pub struct Transaction {
     pub ownership_nature: OwnershipNature,
 }
 
-#[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.Form4.Holding"]
+#[derive(Debug, Deserialize, NifMap)]
 pub struct Holding {
     #[serde(rename = "securityTitle")]
-    pub security_title: StringValue,
+    pub security_title: Value,
     #[serde(rename = "conversionOrExercisePrice")]
-    pub conversion_or_exercise_price: Option<FloatValue>,
+    pub conversion_or_exercise_price: Option<Value>,
     #[serde(rename = "exerciseDate")]
-    pub exercise_date: Option<StringValue>,
+    pub exercise_date: Option<Value>,
     #[serde(rename = "expirationDate")]
-    pub expiration_date: Option<StringValue>,
+    pub expiration_date: Option<Value>,
     #[serde(rename = "underlyingSecurity")]
     pub underlying_security: Option<UnderlyingSecurity>,
     #[serde(rename = "postTransactionAmounts")]
@@ -151,29 +141,13 @@ pub struct Holding {
     pub ownership_nature: OwnershipNature,
 }
 
-#[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.Form4.StringValue"]
-pub struct StringValue {
+#[derive(Debug, Deserialize, NifMap)]
+pub struct Value {
     #[serde(rename = "value")]
     value: Option<String>,
 }
 
-#[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.Form4.IntValue"]
-pub struct IntValue {
-    #[serde(rename = "value")]
-    value: Option<i32>,
-}
-
-#[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.Form4.FloatValue"]
-pub struct FloatValue {
-    #[serde(rename = "value")]
-    value: Option<f32>,
-}
-
-#[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.Form4.TransactionCoding"]
+#[derive(Debug, Deserialize, NifMap)]
 pub struct TransactionCoding {
     #[serde(rename = "transactionFormType")]
     pub form_type: String,
@@ -183,44 +157,39 @@ pub struct TransactionCoding {
     pub equity_swap_involved: bool,
 }
 
-#[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.Form4.TransactionAmounts"]
+#[derive(Debug, Deserialize, NifMap)]
 pub struct TransactionAmounts {
     #[serde(rename = "transactionShares")]
-    pub shares: IntValue,
+    pub shares: Value,
     #[serde(rename = "transactionPricePerShare")]
-    pub price_per_share: FloatValue,
+    pub price_per_share: Value,
     #[serde(rename = "transactionAcquiredDisposedCode")]
-    pub acquired_disposed_code: StringValue,
+    pub acquired_disposed_code: Value,
 }
 
-#[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.Form4.UnderlyingSecurity"]
+#[derive(Debug, Deserialize, NifMap)]
 pub struct UnderlyingSecurity {
     #[serde(rename = "underlyingSecurityTitle")]
-    pub title: StringValue,
+    pub title: Value,
     #[serde(rename = "underlyingSecurityShares")]
-    pub shares: FloatValue,
+    pub shares: Value,
 }
 
-#[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.Form4.PostTransactionAmounts"]
+#[derive(Debug, Deserialize, NifMap)]
 pub struct PostTransactionAmounts {
     #[serde(rename = "sharesOwnedFollowingTransaction")]
-    pub shares_owned_following_transaction: IntValue,
+    pub shares_owned_following_transaction: Value,
 }
 
-#[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.Form4.OwnershipNature"]
+#[derive(Debug, Deserialize, NifMap)]
 pub struct OwnershipNature {
     #[serde(rename = "directOrIndirectOwnership")]
-    pub direct_or_indirect_ownership: StringValue,
+    pub direct_or_indirect_ownership: Value,
     #[serde(rename = "natureOfOwnership")]
-    pub nature_of_ownership: Option<StringValue>,
+    pub nature_of_ownership: Option<Value>,
 }
 
-#[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.Form4.OwnerSignature"]
+#[derive(Debug, Deserialize, NifMap)]
 pub struct OwnerSignature {
     #[serde(rename = "signatureName")]
     pub name: String,

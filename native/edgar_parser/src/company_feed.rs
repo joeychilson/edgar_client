@@ -1,9 +1,8 @@
 use quick_xml::de::from_str;
-use rustler::NifStruct;
+use rustler::NifMap;
 use serde::Deserialize;
 
-#[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.CompanyFeed.Feed"]
+#[derive(Debug, Deserialize, NifMap)]
 pub struct Feed {
     id: String,
     title: String,
@@ -17,15 +16,13 @@ pub struct Feed {
     links: Vec<Link>,
 }
 
-#[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.CompanyFeed.Author"]
+#[derive(Debug, Deserialize, NifMap)]
 pub struct Author {
     email: String,
     name: String,
 }
 
-#[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.CompanyFeed.CompanyInfo"]
+#[derive(Debug, Deserialize, NifMap)]
 pub struct CompanyInfo {
     #[serde(rename = "addresses")]
     addresses: Addresses,
@@ -53,15 +50,13 @@ pub struct CompanyInfo {
     state_of_incorporation: String,
 }
 
-#[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.CompanyFeed.Addresses"]
+#[derive(Debug, Deserialize, NifMap)]
 pub struct Addresses {
     #[serde(rename = "address")]
     addresses: Vec<Address>,
 }
 
-#[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.CompanyFeed.Address"]
+#[derive(Debug, Deserialize, NifMap)]
 pub struct Address {
     #[serde(rename = "@type")]
     address_type: String,
@@ -73,8 +68,7 @@ pub struct Address {
     zip: String,
 }
 
-#[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.CompanyFeed.Entry"]
+#[derive(Debug, Deserialize, NifMap)]
 pub struct Entry {
     category: Category,
     content: Content,
@@ -85,8 +79,7 @@ pub struct Entry {
     updated: String,
 }
 
-#[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.CompanyFeed.Category"]
+#[derive(Debug, Deserialize, NifMap)]
 pub struct Category {
     #[serde(rename = "@label")]
     label: String,
@@ -96,8 +89,7 @@ pub struct Category {
     term: String,
 }
 
-#[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.CompanyFeed.Content"]
+#[derive(Debug, Deserialize, NifMap)]
 pub struct Content {
     #[serde(rename = "@type")]
     content_type: String,
@@ -121,8 +113,7 @@ pub struct Content {
     xbrl_href: Option<String>,
 }
 
-#[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.CompanyFeed.Link"]
+#[derive(Debug, Deserialize, NifMap)]
 pub struct Link {
     #[serde(rename = "@href")]
     href: String,
@@ -132,8 +123,7 @@ pub struct Link {
     link_type: String,
 }
 
-#[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.CompanyFeed.Summary"]
+#[derive(Debug, Deserialize, NifMap)]
 pub struct Summary {
     #[serde(rename = "@type")]
     summary_type: String,

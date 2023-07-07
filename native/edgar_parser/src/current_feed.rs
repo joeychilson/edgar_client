@@ -1,9 +1,8 @@
 use quick_xml::de::from_str;
-use rustler::NifStruct;
+use rustler::NifMap;
 use serde::Deserialize;
 
-#[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.CurrentFeed.Feed"]
+#[derive(Debug, Deserialize, NifMap)]
 pub struct Feed {
     id: String,
     title: String,
@@ -15,15 +14,13 @@ pub struct Feed {
     links: Vec<Link>,
 }
 
-#[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.CurrentFeed.Author"]
+#[derive(Debug, Deserialize, NifMap)]
 pub struct Author {
     email: String,
     name: String,
 }
 
-#[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.CurrentFeed.Entry"]
+#[derive(Debug, Deserialize, NifMap)]
 pub struct Entry {
     id: String,
     updated: String,
@@ -32,8 +29,7 @@ pub struct Entry {
     summary: Summary,
 }
 
-#[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.CurrentFeed.Summary"]
+#[derive(Debug, Deserialize, NifMap)]
 pub struct Summary {
     #[serde(rename = "@type")]
     summary_type: String,
@@ -41,8 +37,7 @@ pub struct Summary {
     value: String,
 }
 
-#[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.CurrentFeed.Category"]
+#[derive(Debug, Deserialize, NifMap)]
 pub struct Category {
     #[serde(rename = "@label")]
     label: String,
@@ -52,8 +47,7 @@ pub struct Category {
     term: String,
 }
 
-#[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.CurrentFeed.Link"]
+#[derive(Debug, Deserialize, NifMap)]
 pub struct Link {
     #[serde(rename = "@href")]
     href: String,

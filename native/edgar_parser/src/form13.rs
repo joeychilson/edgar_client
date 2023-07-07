@@ -1,20 +1,18 @@
 use quick_xml::de::from_str;
-use rustler::NifStruct;
+use rustler::NifMap;
 use serde::Deserialize;
 
-#[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.Form13.Document"]
+#[derive(Debug, Deserialize, NifMap)]
 pub struct Document {
     #[serde(rename = "schemaVersion")]
-    schema_version: String,
+    schema_version: Option<String>,
     #[serde(rename = "headerData")]
     header: Header,
     #[serde(rename = "formData")]
     form: Form,
 }
 
-#[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.Form13.Header"]
+#[derive(Debug, Deserialize, NifMap)]
 pub struct Header {
     #[serde(rename = "submissionType")]
     submission_type: String,
@@ -22,8 +20,7 @@ pub struct Header {
     filer_info: FilerInfo,
 }
 
-#[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.Form13.FilerInfo"]
+#[derive(Debug, Deserialize, NifMap)]
 pub struct FilerInfo {
     #[serde(rename = "liveTestFlag")]
     live_test_flag: String,
@@ -33,8 +30,7 @@ pub struct FilerInfo {
     period_of_report: String,
 }
 
-#[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.Form13.Flags"]
+#[derive(Debug, Deserialize, NifMap)]
 pub struct Flags {
     #[serde(rename = "confirmingCopyFlag")]
     confirming_copy_flag: Option<String>,
@@ -44,21 +40,18 @@ pub struct Flags {
     override_internet_flag: Option<String>,
 }
 
-#[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.Form13.Filer"]
+#[derive(Debug, Deserialize, NifMap)]
 pub struct Filer {
     credentials: Credentials,
 }
 
-#[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.Form13.Credentials"]
+#[derive(Debug, Deserialize, NifMap)]
 pub struct Credentials {
     pub cik: String,
     pub ccc: String,
 }
 
-#[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.Form13.Form"]
+#[derive(Debug, Deserialize, NifMap)]
 pub struct Form {
     #[serde(rename = "coverPage")]
     cover_page: CoverPage,
@@ -68,8 +61,7 @@ pub struct Form {
     summary_page: SummaryPage,
 }
 
-#[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.Form13.CoverPage"]
+#[derive(Debug, Deserialize, NifMap)]
 pub struct CoverPage {
     #[serde(rename = "reportCalendarOrQuarter")]
     report_calendar_or_quarter: String,
@@ -91,15 +83,13 @@ pub struct CoverPage {
     additional_information: Option<String>,
 }
 
-#[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.Form13.FilingManager"]
+#[derive(Debug, Deserialize, NifMap)]
 struct FilingManager {
     name: String,
     address: Address,
 }
 
-#[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.Form13.Address"]
+#[derive(Debug, Deserialize, NifMap)]
 struct Address {
     #[serde(rename = "street1")]
     street1: String,
@@ -113,8 +103,7 @@ struct Address {
     zip_code: String,
 }
 
-#[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.Form13.SignatureBlock"]
+#[derive(Debug, Deserialize, NifMap)]
 pub struct SignatureBlock {
     name: String,
     title: String,
@@ -127,8 +116,7 @@ pub struct SignatureBlock {
     signature_date: String,
 }
 
-#[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.Form13.SummaryPage"]
+#[derive(Debug, Deserialize, NifMap)]
 pub struct SummaryPage {
     #[serde(rename = "otherIncludedManagersCount")]
     other_included_managers_count: u32,
@@ -144,15 +132,13 @@ pub fn parse_form13_document(xml: &str) -> Result<Document, String> {
     Ok(document)
 }
 
-#[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.Form13.Table"]
+#[derive(Debug, Deserialize, NifMap)]
 pub struct Table {
     #[serde(rename = "infoTable")]
     pub holdings: Vec<Holding>,
 }
 
-#[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.Form13.Holding"]
+#[derive(Debug, Deserialize, NifMap)]
 pub struct Holding {
     #[serde(rename = "nameOfIssuer")]
     pub name_of_issuer: String,
@@ -170,8 +156,7 @@ pub struct Holding {
     pub voting_authority: VotingAuthority,
 }
 
-#[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.Form13.SharesOrPrintAmount"]
+#[derive(Debug, Deserialize, NifMap)]
 pub struct SharesOrPrintAmount {
     #[serde(rename = "sshPrnamt")]
     pub shares_or_print_amount: i64,
@@ -179,8 +164,7 @@ pub struct SharesOrPrintAmount {
     pub shares_or_print_type: String,
 }
 
-#[derive(Debug, Deserialize, NifStruct)]
-#[module = "EDGAR.Form13.VotingAuthority"]
+#[derive(Debug, Deserialize, NifMap)]
 pub struct VotingAuthority {
     #[serde(rename = "Sole")]
     pub sole: i64,
