@@ -1,5 +1,5 @@
 use roxmltree::Document as XMLDoc;
-use rustler::{NifMap, NifTaggedEnum};
+use rustler::{NifMap, NifUntaggedEnum};
 use std::collections::HashMap;
 
 #[derive(NifMap)]
@@ -16,7 +16,7 @@ pub struct Fact {
     unit: Option<String>,
 }
 
-#[derive(NifTaggedEnum)]
+#[derive(NifUntaggedEnum)]
 enum Value {
     Int(i64),
     Float(f64),
