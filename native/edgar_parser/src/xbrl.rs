@@ -21,6 +21,7 @@ enum Value {
     Int(i64),
     Float(f64),
     Text(String),
+    Bool(bool),
 }
 
 #[derive(Clone, NifMap)]
@@ -58,80 +59,95 @@ pub fn parse_xbrl(xbrl: &str) -> Result<Document, String> {
     let units = parse_units(&root)?;
     let contexts = parse_contexts(&root, &xbrldi_ns)?;
 
-    let mut facts = Vec::new();
+    let facts: Vec<_> = root
+        .children()
+        .filter_map(|node| {
+            node.attribute("contextRef").and_then(|context_ref| {
+                contexts.get(context_ref).map(|context| {
+                    let tag = node.tag_name().name().to_string();
 
-    for node in root.children() {
-        if let Some(context_ref) = node.attribute("contextRef") {
-            if let Some(context) = contexts.get(context_ref) {
-                let tag = node.tag_name().name().to_string();
-                let value_str = node.text().unwrap_or_default().to_string();
-                let value = if let Ok(int_val) = value_str.parse::<i64>() {
-                    Value::Int(int_val)
-                } else if let Ok(float_val) = value_str.parse::<f64>() {
-                    Value::Float(float_val)
-                } else {
-                    Value::Text(value_str)
-                };
-                let decimals = node.attribute("decimals").map(|s| s.to_string());
+                    let value_str = node.text().unwrap_or_default().to_string();
+                    let value = if let Ok(int_val) = value_str.parse::<i64>() {
+                        Value::Int(int_val)
+                    } else if let Ok(float_val) = value_str.parse::<f64>() {
+                        Value::Float(float_val)
+                    } else if value_str == "true" || value_str == "false" {
+                        Value::Bool(value_str == "true")
+                    } else {
+                        Value::Text(value_str)
+                    };
 
-                let unit = if let Some(unit_ref) = node.attribute("unitRef") {
-                    units.get(unit_ref).cloned()
-                } else {
-                    None
-                };
+                    let decimals = node.attribute("decimals").map(|s| s.to_string());
 
-                facts.push(Fact {
-                    context: context.clone(),
-                    concept: tag,
-                    value,
-                    decimals,
-                    unit,
-                });
-            }
-        }
-    }
+                    let unit = if let Some(unit_ref) = node.attribute("unitRef") {
+                        units.get(unit_ref).cloned()
+                    } else {
+                        None
+                    };
 
-    Ok(Document { facts: facts })
+                    Fact {
+                        context: context.clone(),
+                        concept: tag,
+                        value,
+                        decimals,
+                        unit,
+                    }
+                })
+            })
+        })
+        .collect();
+
+    Ok(Document { facts })
+}
+
+fn get_text_or_default(node: Option<roxmltree::Node>) -> String {
+    node.and_then(|n| n.text()).unwrap_or_default().to_string()
 }
 
 fn parse_units(root: &roxmltree::Node) -> Result<HashMap<String, String>, String> {
     let mut units = HashMap::new();
+
     for unit_node in root.children().filter(|node| node.has_tag_name("unit")) {
         let unit_id = unit_node.attribute("id").unwrap_or_default().to_string();
-        let measure: String;
 
-        if let Some(divide_node) = unit_node
+        let measure = if let Some(divide_node) = unit_node
             .children()
             .find(|node| node.has_tag_name("divide"))
         {
-            let numerator_measure = divide_node
-                .children()
-                .find(|node| node.has_tag_name("unitNumerator"))
-                .and_then(|node| node.children().find(|n| n.has_tag_name("measure")))
-                .and_then(|node| node.text())
-                .unwrap_or_default()
-                .to_string();
-            let denominator_measure = divide_node
-                .children()
-                .find(|node| node.has_tag_name("unitDenominator"))
-                .and_then(|node| node.children().find(|n| n.has_tag_name("measure")))
-                .and_then(|node| node.text())
-                .unwrap_or_default()
-                .to_string();
-            measure = format!("{}/{}", numerator_measure, denominator_measure);
+            let numerator_measure = get_text_or_default(
+                divide_node
+                    .children()
+                    .find(|node| node.has_tag_name("unitNumerator"))
+                    .and_then(|node| node.children().find(|n| n.has_tag_name("measure"))),
+            );
+            let denominator_measure = get_text_or_default(
+                divide_node
+                    .children()
+                    .find(|node| node.has_tag_name("unitDenominator"))
+                    .and_then(|node| node.children().find(|n| n.has_tag_name("measure"))),
+            );
+            format!("{}/{}", numerator_measure, denominator_measure)
         } else {
-            measure = unit_node
-                .children()
-                .find(|node| node.has_tag_name("measure"))
-                .and_then(|node| node.text())
-                .unwrap_or_default()
-                .to_string();
-        }
+            get_text_or_default(
+                unit_node
+                    .children()
+                    .find(|node| node.has_tag_name("measure")),
+            )
+        };
 
         units.insert(unit_id, measure);
     }
+
     Ok(units)
 }
+
+fn get_date(node: &roxmltree::Node, tag: &str) -> Option<String> {
+    node.children()
+        .find(|n| n.has_tag_name(tag))
+        .and_then(|n| n.text())
+        .map(|s| s.to_string())
+}
+
 fn parse_contexts(
     root: &roxmltree::Node,
     xbrldi_ns: &str,
@@ -185,32 +201,18 @@ fn parse_contexts(
             .children()
             .find(|node| node.has_tag_name("period"))
             .unwrap();
-        let instant = period_node
-            .children()
-            .find(|node| node.has_tag_name("instant"))
-            .and_then(|node| node.text())
-            .map(|s| s.to_string());
-        let start_date = period_node
-            .children()
-            .find(|node| node.has_tag_name("startDate"))
-            .and_then(|node| node.text())
-            .map(|s| s.to_string());
-        let end_date = period_node
-            .children()
-            .find(|node| node.has_tag_name("endDate"))
-            .and_then(|node| node.text())
-            .map(|s| s.to_string());
+        let period = Period {
+            instant: get_date(&period_node, "instant"),
+            start_date: get_date(&period_node, "startDate"),
+            end_date: get_date(&period_node, "endDate"),
+        };
 
         contexts.insert(
             context_id,
             Context {
                 entity,
                 segments,
-                period: Period {
-                    instant,
-                    start_date,
-                    end_date,
-                },
+                period,
             },
         );
     }
