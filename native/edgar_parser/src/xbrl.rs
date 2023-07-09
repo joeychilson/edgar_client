@@ -1,5 +1,6 @@
+use crate::xml::{parse_value, Value};
 use roxmltree::Document as XMLDoc;
-use rustler::{NifMap, NifUntaggedEnum};
+use rustler::NifMap;
 use std::collections::HashMap;
 
 #[derive(NifMap)]
@@ -14,14 +15,6 @@ pub struct Fact {
     value: Value,
     decimals: Option<String>,
     unit: Option<String>,
-}
-
-#[derive(NifUntaggedEnum)]
-enum Value {
-    Int(i64),
-    Float(f64),
-    Text(String),
-    Bool(bool),
 }
 
 #[derive(Clone, NifMap)]
@@ -65,20 +58,9 @@ pub fn parse_xbrl(xbrl: &str) -> Result<Document, String> {
             node.attribute("contextRef").and_then(|context_ref| {
                 contexts.get(context_ref).map(|context| {
                     let tag = node.tag_name().name().to_string();
-
                     let value_str = node.text().unwrap_or_default().to_string();
-                    let value = if let Ok(int_val) = value_str.parse::<i64>() {
-                        Value::Int(int_val)
-                    } else if let Ok(float_val) = value_str.parse::<f64>() {
-                        Value::Float(float_val)
-                    } else if value_str == "true" || value_str == "false" {
-                        Value::Bool(value_str == "true")
-                    } else {
-                        Value::Text(value_str)
-                    };
-
+                    let value = parse_value(value_str);
                     let decimals = node.attribute("decimals").map(|s| s.to_string());
-
                     let unit = if let Some(unit_ref) = node.attribute("unitRef") {
                         units.get(unit_ref).cloned()
                     } else {
