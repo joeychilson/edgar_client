@@ -111,34 +111,6 @@ defmodule EDGAR do
 
     "#{@edgar_data_url}/api/xbrl/companyfacts/CIK#{cik}.json"
     |> get_json()
-    |> transform_company_facts()
-  end
-
-  defp transform_company_facts({:ok, result}) do
-    facts = Map.get(result, "facts")
-
-    transformed_facts =
-      Enum.map(facts, fn {fact_type, fact_data} ->
-        fact_data_list =
-          Enum.map(fact_data, fn {concept, details} ->
-            units = Map.get(details, "units")
-
-            values =
-              Enum.flat_map(units, fn {unit_type, unit_data} ->
-                Enum.map(unit_data, &Map.put(&1, "unit", unit_type))
-              end)
-
-            Map.put(details, "values", values)
-            |> Map.drop(["units"])
-            |> Map.put("concept", concept)
-          end)
-
-        {fact_type, fact_data_list}
-      end)
-
-    transformed_data = Map.put(result, "facts", transformed_facts)
-
-    {:ok, transformed_data}
   end
 
   @doc """
@@ -246,14 +218,17 @@ defmodule EDGAR do
   end
 
   @doc """
-  Parses a form 4 filing from a given CIK and accession number
+  Parses form 3, 3/A, 4, 4/A, 5, and 5/A ownership filing types from a given CIK and accession number
+
+  Based on the XML schema found here:
+  - https://www.sec.gov/info/edgar/specifications/ownershipxmltechspec
 
   ## Required
 
   * `cik` - The CIK of the entity
   * `accession_number` - The accession number of the filing
   """
-  def form4_filing(cik, accession_number) do
+  def ownership_filing(cik, accession_number) do
     case filing_directory(cik, accession_number) do
       {:ok, dir} ->
         files = dir["directory"]["item"]
@@ -266,7 +241,7 @@ defmodule EDGAR do
             acc_no = String.replace(accession_number, "-", "")
             xml_file_url = "#{@edgar_archives_url}/data/#{cik}/#{acc_no}/#{xml_file["name"]}"
 
-            form4_from_url(xml_file_url)
+            ownership_filing_from_url(xml_file_url)
         end
 
       error ->
@@ -275,27 +250,33 @@ defmodule EDGAR do
   end
 
   @doc """
-  Parses a form 4 filing from a given url
+  Parses form 3, 3/A, 4, 4/A, 5, and 5/A ownership filing types from a given url
+
+  Based on the XML schema found here:
+  - https://www.sec.gov/info/edgar/specifications/ownershipxmltechspec
 
   ## Required
 
   * `url` - The url of the form 4 filing
   """
-  def form4_from_url(url) do
+  def ownership_filing_from_url(url) do
     with {:ok, body} <- get(url),
-         result <- parse_form4(body) do
+         result <- parse_ownership_form(body) do
       result
     end
   end
 
   @doc """
-  Parses a form 4 filing
+  Parses form 3, 3/A, 4, 4/A, 5, and 5/A filing types.
+
+  Based on the XML schema found here:
+  - https://www.sec.gov/info/edgar/specifications/ownershipxmltechspec
 
   ## Required
 
   * `document` - The document xml to parse
   """
-  def parse_form4(document), do: EDGAR.Native.parse_form4(document)
+  def parse_ownership_form(document), do: EDGAR.Native.parse_ownership_form(document)
 
   @doc """
 

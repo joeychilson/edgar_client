@@ -1,4 +1,4 @@
-use crate::xml::{parse_value, Value};
+use crate::{parse_value, Value};
 use roxmltree::Document as XMLDoc;
 use rustler::NifMap;
 use std::collections::HashMap;

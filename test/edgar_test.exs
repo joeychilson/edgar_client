@@ -93,8 +93,8 @@ defmodule EDGARTest do
     assert form13.document.header.submission_type == "13F-HR"
   end
 
-  test "parsing form4" do
-    form4 = EDGAR.form4_filing("1295032", "000120919122003153")
+  test "parsing ownership filing" do
+    form4 = EDGAR.ownership_filing("1295032", "000120919122003153")
     assert {:ok, form4} = form4
     assert form4.document_type == "4"
   end
