@@ -1,13 +1,13 @@
 mod company_feed;
 mod current_feed;
-mod form13;
 mod ownership;
+mod thirteenf;
 mod xbrl;
 
 use company_feed::parse_company_feed;
 use current_feed::parse_current_feed;
-use form13::{parse_form13_document, parse_form13_table};
 use ownership::parse_ownership_form;
+use thirteenf::{parse_13f_document, parse_13f_table};
 use xbrl::parse_xbrl;
 
 rustler::init!(
@@ -15,9 +15,9 @@ rustler::init!(
     [
         parse_company_feed,
         parse_current_feed,
-        parse_form13_document,
-        parse_form13_table,
         parse_ownership_form,
+        parse_13f_document,
+        parse_13f_table,
         parse_xbrl,
     ]
 );
@@ -37,8 +37,20 @@ pub fn get_string(node: &roxmltree::Node, tag: &str) -> Option<String> {
         .map(|s| s.to_string())
 }
 
+pub fn get_int(node: &roxmltree::Node, tag: &str) -> Option<i64> {
+    get_string(node, tag).and_then(|text| text.parse::<i64>().ok())
+}
+
+pub fn get_ints(node: &roxmltree::Node, tag: &str) -> Vec<i64> {
+    node.children()
+        .filter(|node| node.has_tag_name(tag))
+        .filter_map(|node| node.text())
+        .flat_map(|text| text.split(',').filter_map(|s| s.trim().parse::<i64>().ok()))
+        .collect()
+}
+
 pub fn get_bool(node: &roxmltree::Node, tag: &str) -> Option<bool> {
-    get_string(node, tag).map(|text| text == "1")
+    get_string(node, tag).map(|text| text == "1" || text.to_uppercase() == "Y")
 }
 
 pub fn parse_value(value: String) -> Value {

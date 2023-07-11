@@ -218,6 +218,45 @@ defmodule EDGAR do
   end
 
   @doc """
+  Parses form 3 and 3/A filing types from a given CIK and accession number
+
+  Based on the XML schema found here:
+  - https://www.sec.gov/info/edgar/specifications/ownershipxmltechspec
+
+  ## Required
+
+  * `cik` - The CIK of the entity
+  * `accession_number` - The accession number of the filing
+  """
+  def parse_form3_filing(cik, accession_number), do: parse_ownership_filing(cik, accession_number)
+
+  @doc """
+  Parses form 4 and 4/A filing types from a given CIK and accession number
+
+  Based on the XML schema found here:
+  - https://www.sec.gov/info/edgar/specifications/ownershipxmltechspec
+
+  ## Required
+
+  * `cik` - The CIK of the entity
+  * `accession_number` - The accession number of the filing
+  """
+  def parse_form4_filing(cik, accession_number), do: parse_ownership_filing(cik, accession_number)
+
+  @doc """
+  Parses form 5 and 5/A filing types from a given CIK and accession number
+
+  Based on the XML schema found here:
+  - https://www.sec.gov/info/edgar/specifications/ownershipxmltechspec
+
+  ## Required
+
+  * `cik` - The CIK of the entity
+  * `accession_number` - The accession number of the filing
+  """
+  def parse_form5_filing(cik, accession_number), do: parse_ownership_filing(cik, accession_number)
+
+  @doc """
   Parses form 3, 3/A, 4, 4/A, 5, and 5/A ownership filing types from a given CIK and accession number
 
   Based on the XML schema found here:
@@ -228,7 +267,7 @@ defmodule EDGAR do
   * `cik` - The CIK of the entity
   * `accession_number` - The accession number of the filing
   """
-  def ownership_filing(cik, accession_number) do
+  def parse_ownership_filing(cik, accession_number) do
     case filing_directory(cik, accession_number) do
       {:ok, dir} ->
         files = dir["directory"]["item"]
@@ -241,13 +280,40 @@ defmodule EDGAR do
             acc_no = String.replace(accession_number, "-", "")
             xml_file_url = "#{@edgar_archives_url}/data/#{cik}/#{acc_no}/#{xml_file["name"]}"
 
-            ownership_filing_from_url(xml_file_url)
+            parse_ownership_filing_from_url(xml_file_url)
         end
 
       error ->
         error
     end
   end
+
+  @doc """
+  Parses form 3 and 3/A ownership filing types from a given url
+
+  ## Required
+
+  * `url` - The url of the form 3 filing
+  """
+  def parse_form3_from_url(url), do: parse_ownership_filing_from_url(url)
+
+  @doc """
+  Parses form 4 and 4/A ownership filing types from a given url
+
+  ## Required
+
+  * `url` - The url of the form 3 filing
+  """
+  def parse_form4_from_url(url), do: parse_ownership_filing_from_url(url)
+
+  @doc """
+  Parses form 5 and 5/A ownership filing types from a given url
+
+  ## Required
+
+  * `url` - The url of the form 3 filing
+  """
+  def parse_form5_from_url(url), do: parse_ownership_filing_from_url(url)
 
   @doc """
   Parses form 3, 3/A, 4, 4/A, 5, and 5/A ownership filing types from a given url
@@ -259,7 +325,7 @@ defmodule EDGAR do
 
   * `url` - The url of the form 4 filing
   """
-  def ownership_filing_from_url(url) do
+  def parse_ownership_filing_from_url(url) do
     with {:ok, body} <- get(url),
          result <- parse_ownership_form(body) do
       result
@@ -287,7 +353,7 @@ defmodule EDGAR do
   * `cik` - The CIK of the entity
   * `accession_number` - The accession number of the filing
   """
-  def form13_filing(cik, accession_number) do
+  def parse_form13f_filing(cik, accession_number) do
     case filing_directory(cik, accession_number) do
       {:ok, dir} ->
         files = dir["directory"]["item"]
@@ -308,8 +374,8 @@ defmodule EDGAR do
           table_xml_url =
             "#{@edgar_archives_url}/data/#{cik}/#{acc_no}/#{table_xml_file["name"]}"
 
-          with {:ok, document} <- form13_document_from_url(primary_doc_url),
-               {:ok, table} <- form13_table_from_url(table_xml_url) do
+          with {:ok, document} <- parse_form13f_document_from_url(primary_doc_url),
+               {:ok, table} <- parse_form13f_table_from_url(table_xml_url) do
             {:ok, %{document: document, table: table}}
           else
             error -> error
@@ -331,9 +397,9 @@ defmodule EDGAR do
   * `url` - The url of the form 13F document filing
 
   """
-  def form13_document_from_url(url) do
+  def parse_form13f_document_from_url(url) do
     with {:ok, body} <- get(url),
-         result <- parse_form13_document(body) do
+         result <- parse_13f_document(body) do
       result
     end
   end
@@ -345,9 +411,9 @@ defmodule EDGAR do
 
   * `url` - The url of the form 13F table filing
   """
-  def form13_table_from_url(url) do
+  def parse_form13f_table_from_url(url) do
     with {:ok, body} <- get(url),
-         result <- parse_form13_table(body) do
+         result <- parse_13f_table(body) do
       result
     end
   end
@@ -359,7 +425,7 @@ defmodule EDGAR do
 
   * `xml` - The document xml to parse
   """
-  def parse_form13_document(xml), do: EDGAR.Native.parse_form13_document(xml)
+  def parse_13f_document(xml), do: EDGAR.Native.parse_13f_document(xml)
 
   @doc """
 
@@ -369,7 +435,7 @@ defmodule EDGAR do
 
   * `xml` - The table xml to parse
   """
-  def parse_form13_table(xml), do: EDGAR.Native.parse_form13_table(xml)
+  def parse_13f_table(xml), do: EDGAR.Native.parse_13f_table(xml)
 
   @doc """
   Parses a xbrl filing from a given url
@@ -378,7 +444,7 @@ defmodule EDGAR do
 
   * `url` - The url of the xbrl filing
   """
-  def xbrl_from_url(url) do
+  def parse_xbrl_from_url(url) do
     with {:ok, body} <- get(url),
          result <- parse_xbrl(body) do
       result

@@ -87,14 +87,14 @@ defmodule EDGARTest do
     assert {:error, :not_found} = frames
   end
 
-  test "parsing 13f" do
-    form13 = EDGAR.form13_filing("1067983", "000095012323005270")
+  test "parsing 13f filing" do
+    form13 = EDGAR.parse_form13f_filing("1067983", "000095012323005270")
     assert {:ok, form13} = form13
-    assert form13.document.header.submission_type == "13F-HR"
+    assert form13.document.header_data.submission_type == "13F-HR"
   end
 
   test "parsing ownership filing" do
-    form4 = EDGAR.ownership_filing("1295032", "000120919122003153")
+    form4 = EDGAR.parse_ownership_filing("1295032", "000120919122003153")
     assert {:ok, form4} = form4
     assert form4.document_type == "4"
   end
@@ -113,7 +113,7 @@ defmodule EDGARTest do
 
   test "parsing xbrl" do
     xbrl =
-      EDGAR.xbrl_from_url(
+      EDGAR.parse_xbrl_from_url(
         "https://www.sec.gov/Archives/edgar/data/789019/000156459022026876/msft-10k_20220630_htm.xml"
       )
 
