@@ -2,6 +2,8 @@ use crate::{get_bool, get_int, get_ints, get_string};
 use roxmltree::Document as XMLDoc;
 use rustler::NifMap;
 
+// https://www.sec.gov/info/edgar/specifications/form13fxmltechspec
+
 #[derive(NifMap)]
 pub struct Document {
     schema_version: Option<String>,

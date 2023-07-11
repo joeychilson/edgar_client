@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<informationTable xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://www.sec.gov/edgar/document/thirteenf/informationtable eis_13FDocument.xsd">
+<!-- DISCLAIMER:  This is a sample XML submission document for demonstration purposes only and should not be copied verbatim as part of a submission. -->  
+<!-- Please refer to the 13F XML Technical Specification and the related 13F Schemas for complete filer-constructed submission information.-->
+<!-- Please be aware that these schema locations are for informational purposes only and should not be considered as required items in the 13F Schema. -->
+<!-- If a reference to a style sheet is included the submission will be suspended by EDGAR.  Please do not include any references to style sheets.-->
+	<infoTable>
+		<nameOfIssuer>3-D SYS CORP DEL</nameOfIssuer>
+		<titleOfClass>COM NEW</titleOfClass>
+		<cusip>88554D205</cusip>
+		<value>279</value>
+		<shrsOrPrnAmt>
+			<sshPrnamt>848</sshPrnamt>
+			<sshPrnamtType>SH</sshPrnamtType>
+		</shrsOrPrnAmt>
+		<investmentDiscretion>SOLE</investmentDiscretion>
+		<otherManager>1,2,3</otherManager>
+		<votingAuthority>
+			<Sole>8488745632154587</Sole>
+			<Shared>0</Shared>
+			<None>0</None>
+		</votingAuthority>
+	</infoTable>
+	<infoTable>
+		<nameOfIssuer>3M CO</nameOfIssuer>
+		<titleOfClass>COM NEW</titleOfClass>
+		<cusip>88579Y101</cusip>
+		<value>17594</value>
+		<shrsOrPrnAmt>
+			<sshPrnamt>190371</sshPrnamt>
+			<sshPrnamtType>PRN</sshPrnamtType>
+		</shrsOrPrnAmt>
+		<investmentDiscretion>DFND</investmentDiscretion>
+		<otherManager>2</otherManager>
+		<votingAuthority>
+			<Sole>0</Sole>
+			<Shared>1903718796</Shared>
+			<None>0</None>
+		</votingAuthority>
+	</infoTable>
+	<infoTable>
+		<nameOfIssuer>AARONS INC</nameOfIssuer>
+		<titleOfClass>COM</titleOfClass>
+		<cusip>002535300</cusip>
+		<value>496</value>
+		<shrsOrPrnAmt>
+			<sshPrnamt>17834</sshPrnamt>
+			<sshPrnamtType>SH</sshPrnamtType>
+		</shrsOrPrnAmt>
+		<investmentDiscretion>OTR</investmentDiscretion>
+		<otherManager>2,3</otherManager>
+		<votingAuthority>
+			<Sole>0</Sole>
+			<Shared>0</Shared>
+			<None>17834874569</None>
+		</votingAuthority>
+	</infoTable>
+	<infoTable>
+		<nameOfIssuer>ABB LTD</nameOfIssuer>
+		<titleOfClass>COM PAR $0.50</titleOfClass>
+		<cusip>000375204</cusip>
+		<value>730</value>
+		<shrsOrPrnAmt>
+			<sshPrnamt>39030</sshPrnamt>
+			<sshPrnamtType>PRN</sshPrnamtType>
+		</shrsOrPrnAmt>
+		<investmentDiscretion>SOLE</investmentDiscretion>
+		<otherManager>1,2,3,4,5</otherManager>
+		<votingAuthority>
+			<Sole>39030</Sole>
+			<Shared>0</Shared>
+			<None>0</None>
+		</votingAuthority>
+	</infoTable>
+	<infoTable>
+		<nameOfIssuer>ABBOTT LABS</nameOfIssuer>
+		<titleOfClass>COM</titleOfClass>
+		<cusip>002824100</cusip>
+		<value>30271</value>
+		<shrsOrPrnAmt>
+			<sshPrnamt>441525</sshPrnamt>
+			<sshPrnamtType>SH</sshPrnamtType>
+		</shrsOrPrnAmt>
+		<investmentDiscretion>DFND</investmentDiscretion>
+		<otherManager>1</otherManager>
+		<votingAuthority>
+			<Sole>441525</Sole>
+			<Shared>0</Shared>
+			<None>0</None>
+		</votingAuthority>
+	</infoTable>
+</informationTable>

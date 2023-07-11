@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<edgarSubmission xmlns="http://www.sec.gov/edgar/thirteenffiler" xmlns:ns1="http://www.sec.gov/edgar/common" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://www.sec.gov/edgar/thirteenffiler eis_13F_Filer.xsd">
+<!-- DISCLAIMER:  This is a sample XML submission document for demonstration purposes only and should not be copied verbatim as part of a submission. -->  
+<!-- Please refer to the 13F XML Technical Specification and the related 13F Schemas for complete filer-constructed submission information.-->
+<!-- Please be aware that these schema locations are for informational purposes only and should not be considered as required items in the 13F Schema. -->
+<!-- If a reference to a style sheet is included the submission will be suspended by EDGAR.  Please do not include any references to style sheets.-->
+	<headerData>
+		<submissionType>13F-NT</submissionType>
+		<filerInfo>
+			<liveTestFlag>LIVE</liveTestFlag>
+			<flags>
+				<confirmingCopyFlag>true</confirmingCopyFlag>
+				<returnCopyFlag>false</returnCopyFlag>
+				<overrideInternetFlag>false</overrideInternetFlag>
+			</flags>
+			<filer>
+				<credentials>
+					<cik>1234567890</cik>
+					<ccc>xxxxxxxx</ccc>
+				</credentials>
+				<fileNumber>028-00000</fileNumber>
+			</filer>
+			<contact>
+				<contactName>Contact Name</contactName>
+				<contactPhoneNumber>000-000-0000</contactPhoneNumber>
+				<contactEmailAddress>name@xyzname.com</contactEmailAddress>
+			</contact>
+			<notifications>
+				<notificationEmailAddress>othername2@xyzname.com</notificationEmailAddress>
+				<notificationEmailAddress>othername3@xyzname.com</notificationEmailAddress>
+				<notificationEmailAddress>othername4@xyzname.com</notificationEmailAddress>
+			</notifications>
+			<periodOfReport>10-31-2012</periodOfReport>
+		</filerInfo>
+	</headerData>
+	<formData>
+		<coverPage>
+			<reportCalendarOrQuarter>10-31-2012</reportCalendarOrQuarter>
+			<filingManager>
+				<name>Filing Manager</name>
+				<address>
+					<ns1:street1>123 MAIN STREET</ns1:street1>
+					<ns1:street2>SUITE XYZ</ns1:street2>
+					<ns1:city>XXX</ns1:city>
+					<ns1:stateOrCountry>MD</ns1:stateOrCountry>
+					<ns1:zipCode>12345</ns1:zipCode>
+				</address>
+			</filingManager>
+			<reportType>13F NOTICE</reportType>
+			<otherManagersInfo>
+				<otherManager>
+					<cik>2345678901</cik>
+					<form13FFileNumber>028-000000</form13FFileNumber>
+					<name>Other Manager</name>
+				</otherManager>
+				<otherManager>
+					<cik>3456789012</cik>
+					<form13FFileNumber>028-000000</form13FFileNumber>
+					<name>Other Manager Two</name>
+				</otherManager>
+				<otherManager>
+					<cik>4567890123</cik>
+					<form13FFileNumber>028-10036</form13FFileNumber>
+					<name>Other Manager Three</name>
+				</otherManager>
+			</otherManagersInfo>
+			<provideInfoForInstruction5>Y</provideInfoForInstruction5>
+			<additionalInformation>Additional Information pusuant to Special Instruction 5.</additionalInformation>
+		</coverPage>
+		<signatureBlock>
+			<name>Filing Manager</name>
+			<title>The Filing Manager</title>
+			<phone>000-000-0000</phone>
+			<signature>Filing Manager, The Filing Manager</signature>
+			<city>XXX</city>
+			<stateOrCountry>MD</stateOrCountry>
+			<signatureDate>11-22-2012</signatureDate>
+		</signatureBlock>
+	</formData>
+</edgarSubmission>
