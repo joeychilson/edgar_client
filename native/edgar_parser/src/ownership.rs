@@ -203,15 +203,12 @@ pub fn parse_ownership_form(xml: &str) -> Result<Document, String> {
     let not_subject_to_section_16 = get_bool(&root_node, "notSubjectToSection16");
     let form3_holdings_reported = get_bool(&root_node, "form3HoldingsReported");
     let form4_transactions_reported = get_bool(&root_node, "form4TransactionsReported");
+    let aff10b5_one = get_bool(&root_node, "aff10b5One");
 
     let issuer = parse_issuer(&root_node)?;
     let reporting_owner = parse_reporting_owner(&root_node)?;
-
-    let aff10b5_one = get_bool(&root_node, "aff10b5One");
-
     let non_derivative_table = parse_non_derivative_table(&root_node)?;
     let derivative_table = parse_derivative_table(&root_node)?;
-
     let footnotes = parse_footnotes(&root_node)?;
     let remarks = get_string(&root_node, "remarks");
     let owner_signature = parse_owner_signature(&root_node)?;

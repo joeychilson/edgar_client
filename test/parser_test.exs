@@ -79,4 +79,16 @@ defmodule EDGARTest.Parser do
     {:ok, filing} = EDGAR.Native.parse_ownership_form(file)
     assert filing.document_type == "5/A"
   end
+
+  test "parsing current_feed" do
+    {:ok, file} = File.read("test/test_data/current_feed.xml")
+    {:ok, feed} = EDGAR.Native.parse_current_feed(file)
+    assert feed.id == "https://www.sec.gov/cgi-bin/browse-edgar?action=getcurrent"
+  end
+
+  test "parsing company_feed" do
+    {:ok, file} = File.read("test/test_data/company_feed.xml")
+    {:ok, feed} = EDGAR.Native.parse_company_feed(file)
+    assert feed.id == "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000789019"
+  end
 end
