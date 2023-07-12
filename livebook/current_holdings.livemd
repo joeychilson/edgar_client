@@ -1,0 +1,74 @@
+<!-- livebook:{"app_settings":{"access_type":"public","slug":"current-holdings"}} -->
+
+# Current Holdings
+
+```elixir
+Mix.install([
+  {:edgar_client, "~> 0.7.0"},
+  {:kino_vega_lite, "~> 0.1.7"},
+  {:kino_explorer, "~> 0.1.4"},
+  {:kino, "~> 0.10.0"}
+])
+```
+
+## Lookup
+
+```elixir
+form =
+  Kino.Control.form(
+    [
+      cik: Kino.Input.text("CIK:")
+    ],
+    submit: "Lookup"
+  )
+```
+
+```elixir
+frame = Kino.Frame.new()
+```
+
+```elixir
+Kino.listen(form, fn %{data: %{cik: cik}, origin: origin} ->
+  Kino.Frame.clear(frame)
+
+  if cik != "" do
+    {:ok, filings} = EDGAR.filings_by_forms(cik, ["13F-HR"])
+    {:ok, form13} = EDGAR.parse_form13f_filing(cik, hd(filings)["accessionNumber"])
+
+    company_name = form13.document.form_data.cover_page.filing_manager.name
+
+    current_holdings =
+      form13.table.entries
+      |> Enum.map(fn map ->
+        Map.drop(map, [
+          :investment_discretion,
+          :other_manager,
+          :shares_or_print_amount,
+          :voting_authority,
+          :put_call,
+          :title_of_class
+        ])
+      end)
+
+    df =
+      current_holdings
+      |> Explorer.DataFrame.new()
+      |> Explorer.DataFrame.group_by("name_of_issuer")
+      |> Explorer.DataFrame.summarise_with(&[total_value: Explorer.Series.max(&1["value"])])
+
+    Kino.Frame.append(frame, df)
+
+    chart =
+      VegaLite.new(width: 840, height: 600, title: "Current Holdings of " <> company_name)
+      |> VegaLite.data_from_values(df, only: ["name_of_issuer", "total_value"])
+      |> VegaLite.mark(:bar)
+      |> VegaLite.encode_field(:x, "name_of_issuer", type: :nominal)
+      |> VegaLite.encode_field(:y, "total_value", type: :quantitative)
+
+    Kino.Frame.append(frame, chart)
+  else
+    content = Kino.Markdown.new("_ERROR! You need enter a cik before submitting..._")
+    Kino.Frame.append(frame, content, to: origin)
+  end
+end)
+```
