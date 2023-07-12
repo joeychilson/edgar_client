@@ -1,23 +1,26 @@
 mod company_feed;
 mod current_feed;
 mod ownership;
+mod press_release_feed;
 mod thirteenf;
 mod xbrl;
 
 use company_feed::parse_company_feed;
 use current_feed::parse_current_feed;
 use ownership::parse_ownership_form;
+use press_release_feed::parse_press_release_feed;
 use thirteenf::{parse_13f_document, parse_13f_table};
 use xbrl::parse_xbrl;
 
 rustler::init!(
     "Elixir.EDGAR.Native",
     [
+        parse_13f_document,
+        parse_13f_table,
         parse_company_feed,
         parse_current_feed,
         parse_ownership_form,
-        parse_13f_document,
-        parse_13f_table,
+        parse_press_release_feed,
         parse_xbrl,
     ]
 );

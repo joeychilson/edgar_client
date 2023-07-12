@@ -91,4 +91,10 @@ defmodule EDGARTest.Parser do
     {:ok, feed} = EDGAR.Native.parse_company_feed(file)
     assert feed.id == "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000789019"
   end
+
+  test "parsing press_release_feed" do
+    {:ok, file} = File.read("test/test_data/press_release_feed.xml")
+    {:ok, feed} = EDGAR.Native.parse_press_release_feed(file)
+    assert feed.title == "Press Releases"
+  end
 end

@@ -111,6 +111,12 @@ defmodule EDGARTest do
     assert current_feed.author.name == "Webmaster"
   end
 
+  test "parsing press release feed" do
+    press_release_feed = EDGAR.press_release_feed()
+    assert {:ok, press_release_feed} = press_release_feed
+    assert press_release_feed.title == "Press Releases"
+  end
+
   test "parsing xbrl" do
     xbrl =
       EDGAR.parse_xbrl_from_url(

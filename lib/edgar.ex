@@ -526,6 +526,27 @@ defmodule EDGAR do
   """
   def parse_company_feed(xml), do: EDGAR.Native.parse_company_feed(xml)
 
+  @doc """
+  Fetches the press release feed
+  """
+  def press_release_feed do
+    url = "https://www.sec.gov/news/pressreleases.rss"
+
+    with {:ok, body} <- get(url),
+         result <- parse_press_release_feed(body) do
+      result
+    end
+  end
+
+  @doc """
+  Parses the press release feed
+
+  ## Required
+
+  * `xml` - The RSS feed xml to parse
+  """
+  def parse_press_release_feed(xml), do: EDGAR.Native.parse_press_release_feed(xml)
+
   @doc false
   defp get_json(url) do
     SimpleRateLimiter.wait_and_proceed(fn ->
