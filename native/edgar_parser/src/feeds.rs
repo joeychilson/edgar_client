@@ -2,16 +2,75 @@ use crate::{get_int, get_string};
 use roxmltree::Document as XMLDoc;
 use rustler::NifMap;
 
-// https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000789019&output=atom
+#[derive(NifMap)]
+pub struct RSSFeed {
+    title: Option<String>,
+    link: Option<String>,
+    description: Option<String>,
+    language: Option<String>,
+    items: Vec<Item>,
+    pub_date: Option<String>,
+    last_build_date: Option<String>,
+}
 
 #[derive(NifMap)]
-pub struct Feed {
+pub struct Item {
+    title: Option<String>,
+    link: Option<String>,
+    description: Option<String>,
+    category: Option<String>,
+    pub_date: Option<String>,
+}
+
+#[rustler::nif]
+pub fn parse_rss_feed(xml: &str) -> Result<RSSFeed, String> {
+    let doc = XMLDoc::parse(xml).map_err(|e| e.to_string())?;
+    let root_node = doc.root_element().first_element_child().unwrap();
+    let title = get_string(&root_node, "title");
+    let link = get_string(&root_node, "link");
+    let description = get_string(&root_node, "description");
+    let language = get_string(&root_node, "language");
+    let pub_date = get_string(&root_node, "pubDate");
+    let last_build_date = get_string(&root_node, "lastBuildDate");
+
+    let items = root_node
+        .children()
+        .filter(|n| n.has_tag_name("item"))
+        .map(|item_node| {
+            let title = get_string(&item_node, "title");
+            let link = get_string(&item_node, "link");
+            let description = get_string(&item_node, "description");
+            let category = get_string(&item_node, "category");
+            let pub_date = get_string(&item_node, "pubDate");
+
+            Ok::<Item, String>(Item {
+                title,
+                link,
+                description,
+                category,
+                pub_date,
+            })
+        })
+        .collect::<Result<Vec<Item>, String>>()?;
+
+    Ok(RSSFeed {
+        title,
+        link,
+        description,
+        language,
+        items,
+        pub_date,
+        last_build_date,
+    })
+}
+
+#[derive(NifMap)]
+pub struct CurrentFeed {
     id: Option<String>,
     title: Option<String>,
     updated: Option<String>,
     author: Option<Author>,
-    company_info: Option<CompanyInfo>,
-    entries: Vec<Entry>,
+    entries: Vec<CurrentEntry>,
     links: Vec<Link>,
 }
 
@@ -19,6 +78,89 @@ pub struct Feed {
 pub struct Author {
     email: Option<String>,
     name: Option<String>,
+}
+
+#[derive(NifMap)]
+pub struct CurrentEntry {
+    id: Option<String>,
+    updated: Option<String>,
+    title: Option<String>,
+    link: Option<Link>,
+    category: Option<Category>,
+    summary: Option<Summary>,
+}
+
+#[derive(NifMap)]
+pub struct Summary {
+    summary_type: Option<String>,
+    summary: Option<String>,
+}
+
+#[derive(NifMap)]
+pub struct Category {
+    label: Option<String>,
+    scheme: Option<String>,
+    term: Option<String>,
+}
+
+#[derive(NifMap)]
+pub struct Link {
+    href: Option<String>,
+    rel: Option<String>,
+    link_type: Option<String>,
+}
+
+#[rustler::nif]
+pub fn parse_current_feed(xml: &str) -> Result<CurrentFeed, String> {
+    let doc = XMLDoc::parse(xml).map_err(|e| e.to_string())?;
+    let root_node = doc.root_element();
+    let id = get_string(&root_node, "id");
+    let title = get_string(&root_node, "title");
+    let updated = get_string(&root_node, "updated");
+    let links = parse_links(&root_node)?;
+    let author = parse_author(&root_node)?;
+
+    let entries = root_node
+        .children()
+        .filter(|n| n.has_tag_name("entry"))
+        .map(|entry_node| {
+            let id = get_string(&entry_node, "id");
+            let updated = get_string(&entry_node, "updated");
+            let title = get_string(&entry_node, "title");
+            let link = parse_link(&entry_node)?;
+            let category = parse_category(&entry_node)?;
+            let summary = parse_summary(&entry_node)?;
+
+            Ok(CurrentEntry {
+                id,
+                updated,
+                title,
+                link,
+                category,
+                summary,
+            })
+        })
+        .collect::<Result<Vec<CurrentEntry>, String>>()?;
+
+    Ok(CurrentFeed {
+        id,
+        title,
+        updated,
+        author,
+        entries,
+        links,
+    })
+}
+
+#[derive(NifMap)]
+pub struct CompanyFeed {
+    id: Option<String>,
+    title: Option<String>,
+    updated: Option<String>,
+    author: Option<Author>,
+    company_info: Option<CompanyInfo>,
+    entries: Vec<CompanyEntry>,
+    links: Vec<Link>,
 }
 
 #[derive(NifMap)]
@@ -54,7 +196,7 @@ pub struct Address {
 }
 
 #[derive(NifMap)]
-pub struct Entry {
+pub struct CompanyEntry {
     category: Option<Category>,
     content: Option<Content>,
     id: Option<String>,
@@ -62,13 +204,6 @@ pub struct Entry {
     summary: Option<Summary>,
     title: Option<String>,
     updated: Option<String>,
-}
-
-#[derive(NifMap)]
-pub struct Category {
-    label: Option<String>,
-    scheme: Option<String>,
-    term: Option<String>,
 }
 
 #[derive(NifMap)]
@@ -88,54 +223,15 @@ pub struct Content {
     xbrl_href: Option<String>,
 }
 
-#[derive(NifMap)]
-pub struct Link {
-    href: Option<String>,
-    rel: Option<String>,
-    link_type: Option<String>,
-}
-
-#[derive(NifMap)]
-pub struct Summary {
-    summary_type: Option<String>,
-    summary: Option<String>,
-}
-
 #[rustler::nif]
-pub fn parse_company_feed(xml: &str) -> Result<Feed, String> {
+pub fn parse_company_feed(xml: &str) -> Result<CompanyFeed, String> {
     let doc = XMLDoc::parse(xml).map_err(|e| e.to_string())?;
     let root_node = doc.root_element();
-
     let id = get_string(&root_node, "id");
     let title = get_string(&root_node, "title");
     let updated = get_string(&root_node, "updated");
-
-    let links = root_node
-        .children()
-        .filter(|n| n.has_tag_name("link"))
-        .map(|link_node| {
-            let href = link_node.attribute("href").map(|s| s.to_string());
-            let rel = link_node.attribute("rel").map(|s| s.to_string());
-            let link_type = link_node.attribute("type").map(|s| s.to_string());
-
-            Ok(Link {
-                href,
-                rel,
-                link_type,
-            })
-        })
-        .collect::<Result<Vec<Link>, String>>()?;
-
-    let author = root_node
-        .children()
-        .find(|n| n.has_tag_name("author"))
-        .map(|author_node| {
-            let name = get_string(&author_node, "name");
-            let email = get_string(&author_node, "email");
-
-            Ok::<Author, String>(Author { name, email })
-        })
-        .transpose()?;
+    let links = parse_links(&root_node)?;
+    let author = parse_author(&root_node)?;
 
     let company_info = root_node
         .children()
@@ -209,52 +305,9 @@ pub fn parse_company_feed(xml: &str) -> Result<Feed, String> {
             let id = get_string(&entry_node, "id");
             let updated = get_string(&entry_node, "updated");
             let title = get_string(&entry_node, "title");
-
-            let link = entry_node
-                .children()
-                .find(|n| n.has_tag_name("link"))
-                .map(|link_node| {
-                    let href = link_node.attribute("href").map(|s| s.to_string());
-                    let rel = link_node.attribute("rel").map(|s| s.to_string());
-                    let link_type = link_node.attribute("type").map(|s| s.to_string());
-
-                    Ok::<Link, String>(Link {
-                        href,
-                        rel,
-                        link_type,
-                    })
-                })
-                .transpose()?;
-
-            let category = entry_node
-                .children()
-                .find(|n| n.has_tag_name("category"))
-                .map(|category_node| {
-                    let label = category_node.attribute("label").map(|s| s.to_string());
-                    let scheme = category_node.attribute("scheme").map(|s| s.to_string());
-                    let term = category_node.attribute("term").map(|s| s.to_string());
-
-                    Ok::<Category, String>(Category {
-                        label,
-                        scheme,
-                        term,
-                    })
-                })
-                .transpose()?;
-
-            let summary = entry_node
-                .children()
-                .find(|n| n.has_tag_name("summary"))
-                .map(|summary_node| {
-                    let summary_type = summary_node.attribute("type").map(|s| s.to_string());
-                    let summary = summary_node.text().map(|s| s.to_string());
-
-                    Ok::<Summary, String>(Summary {
-                        summary_type,
-                        summary,
-                    })
-                })
-                .transpose()?;
+            let link = parse_link(&entry_node)?;
+            let category = parse_category(&entry_node)?;
+            let summary = parse_summary(&entry_node)?;
 
             let content = entry_node
                 .children()
@@ -292,7 +345,7 @@ pub fn parse_company_feed(xml: &str) -> Result<Feed, String> {
                 })
                 .transpose()?;
 
-            Ok::<Entry, String>(Entry {
+            Ok::<CompanyEntry, String>(CompanyEntry {
                 id,
                 updated,
                 title,
@@ -302,9 +355,9 @@ pub fn parse_company_feed(xml: &str) -> Result<Feed, String> {
                 content,
             })
         })
-        .collect::<Result<Vec<Entry>, String>>()?;
+        .collect::<Result<Vec<CompanyEntry>, String>>()?;
 
-    Ok(Feed {
+    Ok(CompanyFeed {
         id,
         title,
         updated,
@@ -313,4 +366,84 @@ pub fn parse_company_feed(xml: &str) -> Result<Feed, String> {
         company_info,
         entries,
     })
+}
+
+fn parse_author(node: &roxmltree::Node) -> Result<Option<Author>, String> {
+    node.children()
+        .find(|n| n.has_tag_name("author"))
+        .map(|author_node| {
+            let name = get_string(&author_node, "name");
+            let email = get_string(&author_node, "email");
+
+            Ok::<Author, String>(Author { name, email })
+        })
+        .transpose()
+}
+
+fn parse_link(node: &roxmltree::Node) -> Result<Option<Link>, String> {
+    node.children()
+        .find(|n| n.has_tag_name("link"))
+        .map(|link_node| {
+            let href = link_node.attribute("href").map(|s| s.to_string());
+            let rel = link_node.attribute("rel").map(|s| s.to_string());
+            let link_type = link_node.attribute("type").map(|s| s.to_string());
+
+            Ok(Link {
+                href,
+                rel,
+                link_type,
+            })
+        })
+        .transpose()
+}
+
+fn parse_links(node: &roxmltree::Node) -> Result<Vec<Link>, String> {
+    let links = node
+        .children()
+        .filter(|n| n.has_tag_name("link"))
+        .filter_map(|link_node| {
+            let href = link_node.attribute("href").map(|s| s.to_string());
+            let rel = link_node.attribute("rel").map(|s| s.to_string());
+            let link_type = link_node.attribute("type").map(|s| s.to_string());
+
+            Some(Link {
+                href,
+                rel,
+                link_type,
+            })
+        })
+        .collect();
+    Ok(links)
+}
+
+fn parse_category(node: &roxmltree::Node) -> Result<Option<Category>, String> {
+    node.children()
+        .find(|n| n.has_tag_name("category"))
+        .map(|category_node| {
+            let label = category_node.attribute("label").map(|s| s.to_string());
+            let scheme = category_node.attribute("scheme").map(|s| s.to_string());
+            let term = category_node.attribute("term").map(|s| s.to_string());
+
+            Ok(Category {
+                label,
+                scheme,
+                term,
+            })
+        })
+        .transpose()
+}
+
+fn parse_summary(node: &roxmltree::Node) -> Result<Option<Summary>, String> {
+    node.children()
+        .find(|n| n.has_tag_name("summary"))
+        .map(|summary_node| {
+            let summary_type = summary_node.attribute("type").map(|s| s.to_string());
+            let summary = summary_node.text().map(|s| s.to_string());
+
+            Ok(Summary {
+                summary_type,
+                summary,
+            })
+        })
+        .transpose()
 }

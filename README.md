@@ -11,25 +11,10 @@ This library is a work in progress. The API is subject to change.
 ```elixir
 def deps do
   [
-    {:edgar_client, "~> 0.6.0"}
+    {:edgar_client, "~> 0.7.0"}
   ]
 end
 ```
-
-## Features
-
-- [x] Rate Limiting
-- [x] company tickers
-- [x] company information
-- [x] company facts
-- [x] company concepts
-- [x] filings by CIK
-- [x] filings by form Type
-- [x] current filings feed
-- [x] company filings feed
-- [x] form13 filings parsing
-- [x] form4 filings parsing
-- [x] XBRL parsing
 
 ## Configuration
 

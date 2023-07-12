@@ -94,7 +94,7 @@ defmodule EDGARTest.Parser do
 
   test "parsing press_release_feed" do
     {:ok, file} = File.read("test/test_data/press_release_feed.xml")
-    {:ok, feed} = EDGAR.Native.parse_press_release_feed(file)
+    {:ok, feed} = EDGAR.Native.parse_rss_feed(file)
     assert feed.title == "Press Releases"
   end
 end

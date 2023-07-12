@@ -29,6 +29,6 @@ defmodule EDGAR.Native do
   def parse_current_feed(_xml), do: :erlang.nif_error(:nif_not_loaded)
   def parse_company_feed(_xml), do: :erlang.nif_error(:nif_not_loaded)
   def parse_ownership_form(_xml), do: :erlang.nif_error(:nif_not_loaded)
-  def parse_press_release_feed(_xml), do: :erlang.nif_error(:nif_not_loaded)
+  def parse_rss_feed(_xml), do: :erlang.nif_error(:nif_not_loaded)
   def parse_xbrl(_xml), do: :erlang.nif_error(:nif_not_loaded)
 end

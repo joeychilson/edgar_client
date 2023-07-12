@@ -533,7 +533,127 @@ defmodule EDGAR do
     url = "https://www.sec.gov/news/pressreleases.rss"
 
     with {:ok, body} <- get(url),
-         result <- parse_press_release_feed(body) do
+         result <- parse_rss_feed(body) do
+      result
+    end
+  end
+
+  @doc """
+  Fetches the speeches and statements feed
+  """
+  def speeches_and_statements_feed do
+    url = "https://www.sec.gov/news/speeches-statements.rss"
+
+    with {:ok, body} <- get(url),
+         result <- parse_rss_feed(body) do
+      result
+    end
+  end
+
+  @doc """
+  Fetches the speeches feed
+  """
+  def speeches_feed do
+    url = "https://www.sec.gov/news/speeches.rss"
+
+    with {:ok, body} <- get(url),
+         result <- parse_rss_feed(body) do
+      result
+    end
+  end
+
+  @doc """
+  Fetches the testimony feed
+  """
+  def testimony_feed do
+    url = "https://www.sec.gov/news/testimony.rss"
+
+    with {:ok, body} <- get(url),
+         result <- parse_rss_feed(body) do
+      result
+    end
+  end
+
+  @doc """
+  Fetches the statements feed
+  """
+  def statements_feed do
+    url = "https://www.sec.gov/news/statements.rss"
+
+    with {:ok, body} <- get(url),
+         result <- parse_rss_feed(body) do
+      result
+    end
+  end
+
+  @doc """
+  Fetches the litigation feed
+  """
+  def litigation_feed do
+    url = "https://www.sec.gov/litigation/litreleases.rss"
+
+    with {:ok, body} <- get(url),
+         result <- parse_rss_feed(body) do
+      result
+    end
+  end
+
+  @doc """
+  Fetches the administrative proceedings feed
+  """
+  def administrative_roceedings_feed do
+    url = "https://www.sec.gov/rss/litigation/admin.xml"
+
+    with {:ok, body} <- get(url),
+         result <- parse_rss_feed(body) do
+      result
+    end
+  end
+
+  @doc """
+  Fetches the trading suspensions feed
+  """
+  def trading_suspensions_feed do
+    url = "https://www.sec.gov/rss/litigation/suspensions.xml"
+
+    with {:ok, body} <- get(url),
+         result <- parse_rss_feed(body) do
+      result
+    end
+  end
+
+  @doc """
+  Fetches the division of corporation finance news feed
+  """
+  def division_of_corporation_finance_feed do
+    url = "https://www.sec.gov/rss/divisions/corpfin/cfnew.xml"
+
+    with {:ok, body} <- get(url),
+         result <- parse_rss_feed(body) do
+      result
+    end
+  end
+
+  @doc """
+  Fetches the division of investment management news feed
+  """
+  def division_of_investment_management_feed do
+    url = "https://www.sec.gov/rss/divisions/investment/imnews.xml"
+
+    with {:ok, body} <- get(url),
+         result <- parse_rss_feed(body) do
+      result
+    end
+  end
+
+  @doc """
+  Fetches the investor alerts feed
+  """
+  def investor_alerts_feed do
+    url = "https://www.sec.gov/rss/investor/alerts"
+
+    with {:ok, body} <- get(url),
+         result <- parse_rss_feed(body) do
       result
     end
   end
@@ -545,7 +665,7 @@ defmodule EDGAR do
 
   * `xml` - The RSS feed xml to parse
   """
-  def parse_press_release_feed(xml), do: EDGAR.Native.parse_press_release_feed(xml)
+  def parse_rss_feed(xml), do: EDGAR.Native.parse_rss_feed(xml)
 
   @doc false
   defp get_json(url) do

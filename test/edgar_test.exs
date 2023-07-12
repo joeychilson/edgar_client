@@ -117,6 +117,12 @@ defmodule EDGARTest do
     assert press_release_feed.title == "Press Releases"
   end
 
+  test "parsing speeches and statements feed" do
+    speeches_and_statements_feed = EDGAR.speeches_and_statements_feed()
+    assert {:ok, speeches_and_statements_feed} = speeches_and_statements_feed
+    assert speeches_and_statements_feed.title == "Speeches and Statements"
+  end
+
   test "parsing xbrl" do
     xbrl =
       EDGAR.parse_xbrl_from_url(
