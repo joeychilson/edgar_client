@@ -4,43 +4,43 @@ defmodule EDGARTest.Parser do
 
   test "parsing doc13f_ctr" do
     {:ok, file} = File.read("test/test_data/doc13f_ctr.xml")
-    {:ok, filing} = EDGAR.Native.parse_13f_document(file)
+    {:ok, filing} = EDGAR.Native.parse_form13f_document(file)
     assert filing.header_data.submission_type == "13F-CTR"
   end
 
   test "parsing form13f_ctra" do
     {:ok, file} = File.read("test/test_data/doc13f_ctra.xml")
-    {:ok, filing} = EDGAR.Native.parse_13f_document(file)
+    {:ok, filing} = EDGAR.Native.parse_form13f_document(file)
     assert filing.header_data.submission_type == "13F-CTR/A"
   end
 
   test "parsing form13f_hr" do
     {:ok, file} = File.read("test/test_data/doc13f_hr.xml")
-    {:ok, filing} = EDGAR.Native.parse_13f_document(file)
+    {:ok, filing} = EDGAR.Native.parse_form13f_document(file)
     assert filing.header_data.submission_type == "13F-HR"
   end
 
   test "parsing form13f_hra" do
     {:ok, file} = File.read("test/test_data/doc13f_hra.xml")
-    {:ok, filing} = EDGAR.Native.parse_13f_document(file)
+    {:ok, filing} = EDGAR.Native.parse_form13f_document(file)
     assert filing.header_data.submission_type == "13F-HR/A"
   end
 
   test "parsing form13f_nt" do
     {:ok, file} = File.read("test/test_data/doc13f_nt.xml")
-    {:ok, filing} = EDGAR.Native.parse_13f_document(file)
+    {:ok, filing} = EDGAR.Native.parse_form13f_document(file)
     assert filing.header_data.submission_type == "13F-NT"
   end
 
   test "parsing form13f_nta" do
     {:ok, file} = File.read("test/test_data/doc13f_nta.xml")
-    {:ok, filing} = EDGAR.Native.parse_13f_document(file)
+    {:ok, filing} = EDGAR.Native.parse_form13f_document(file)
     assert filing.header_data.submission_type == "13F-NT/A"
   end
 
   test "parsing doc13f_table" do
     {:ok, file} = File.read("test/test_data/doc13f_table.xml")
-    {:ok, filing} = EDGAR.Native.parse_13f_table(file)
+    {:ok, filing} = EDGAR.Native.parse_form13f_table(file)
     assert filing.entries > 0
   end
 

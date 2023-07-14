@@ -5,16 +5,16 @@ mod xbrl;
 
 use feeds::{parse_company_feed, parse_current_feed, parse_rss_feed};
 use ownership::parse_ownership_form;
-use thirteenf::{parse_13f_document, parse_13f_table};
+use thirteenf::{parse_form13f_document, parse_form13f_table};
 use xbrl::parse_xbrl;
 
 rustler::init!(
     "Elixir.EDGAR.Native",
     [
-        parse_13f_document,
-        parse_13f_table,
         parse_company_feed,
         parse_current_feed,
+        parse_form13f_document,
+        parse_form13f_table,
         parse_ownership_form,
         parse_rss_feed,
         parse_xbrl,

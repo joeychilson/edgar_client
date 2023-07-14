@@ -11,7 +11,7 @@ This library is a work in progress. The API is subject to change.
 ```elixir
 def deps do
   [
-    {:edgar_client, "~> 0.7.0"}
+    {:edgar_client, "~> 0.8.0"}
   ]
 end
 ```

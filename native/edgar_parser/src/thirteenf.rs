@@ -182,7 +182,7 @@ pub struct VotingAuthority {
 }
 
 #[rustler::nif]
-pub fn parse_13f_document(xml: &str) -> Result<Document, String> {
+pub fn parse_form13f_document(xml: &str) -> Result<Document, String> {
     let doc = XMLDoc::parse(xml).map_err(|e| e.to_string())?;
     let root_node = doc.root_element();
 
@@ -531,7 +531,7 @@ fn parse_documents(node: &roxmltree::Node) -> Result<Vec<OtherDocument>, String>
 }
 
 #[rustler::nif]
-pub fn parse_13f_table(xml: &str) -> Result<Table, String> {
+pub fn parse_form13f_table(xml: &str) -> Result<Table, String> {
     let doc = XMLDoc::parse(xml).map_err(|e| e.to_string())?;
     let root_node = doc.root_element();
 

@@ -150,28 +150,61 @@ defmodule EDGAR do
   ## Required
 
   * `cik` - The CIK of the entity
+
+  ## Optional
+
+  * `form_type` - The form type of the filing
+  * `offset` - The offset of the filings
+  * `limit` - The limit of the filings
   """
-  def filings(cik) do
+  def filings(cik, opts \\ %{}) do
     case submissions(cik) do
       {:ok, submissions} ->
-        recent_filings = submissions["filings"]["recent"]
+        filings =
+          submissions
+          |> get_recent_filings()
+          |> append_file_filings(submissions["filings"]["files"])
+          |> form_type(opts[:form_type])
+          |> offset(opts[:offset])
+          |> limit(opts[:limit])
 
-        formatted_recent_filings = format_filings(recent_filings)
+        {:ok, filings}
 
-        files = submissions["filings"]["files"]
-
-        formatted_file_filings =
-          Enum.flat_map(files, fn file ->
-            file_name = file["name"]
-            {:ok, file_data} = get_json("#{@edgar_data_url}/submissions/#{file_name}")
-            format_filings(file_data)
-          end)
-
-        {:ok, formatted_recent_filings ++ formatted_file_filings}
-
-      {:error, _} = error ->
+      error ->
         error
     end
+  end
+
+  defp get_recent_filings(submissions) do
+    submissions["filings"]["recent"] |> format_filings()
+  end
+
+  defp append_file_filings(filings, files) do
+    formatted_file_filings =
+      Enum.flat_map(files, fn file ->
+        {:ok, file_data} = get_json("#{@edgar_data_url}/submissions/#{file["name"]}")
+        format_filings(file_data)
+      end)
+
+    filings ++ formatted_file_filings
+  end
+
+  defp form_type(filings, form_type) when is_nil(form_type), do: filings
+
+  defp form_type(filings, form_type) do
+    Enum.filter(filings, fn filing -> filing["form"] == form_type end)
+  end
+
+  defp offset(filings, offset) when is_nil(offset), do: filings
+
+  defp offset(filings, offset) do
+    Enum.drop(filings, offset)
+  end
+
+  defp limit(filings, limit) when is_nil(limit), do: filings
+
+  defp limit(filings, limit) do
+    Enum.take(filings, limit)
   end
 
   @doc false
@@ -191,30 +224,10 @@ defmodule EDGAR do
       "size"
     ]
 
-    file_field_values = for name <- field_names, do: Map.get(filings, name)
-
-    Enum.zip(file_field_values)
+    Enum.zip(for name <- field_names, do: Map.get(filings, name))
     |> Enum.map(fn tuple ->
       Map.new(Enum.zip(field_names, Tuple.to_list(tuple)))
     end)
-  end
-
-  @doc """
-  Fetches a list of filings from the submissions file by form
-
-  ## Required
-
-  * `cik` - The CIK of the entity
-  * `forms` - The forms to filter by
-  """
-  def filings_by_forms(cik, forms) do
-    case filings(cik) do
-      {:ok, filings} ->
-        {:ok, Enum.filter(filings, fn filing -> filing["form"] in forms end)}
-
-      {:error, _} = error ->
-        error
-    end
   end
 
   @doc """
@@ -228,7 +241,7 @@ defmodule EDGAR do
   * `cik` - The CIK of the entity
   * `accession_number` - The accession number of the filing
   """
-  def parse_form3_filing(cik, accession_number), do: parse_ownership_filing(cik, accession_number)
+  def form3_filing(cik, accession_number), do: ownership_filing(cik, accession_number)
 
   @doc """
   Parses form 4 and 4/A filing types from a given CIK and accession number
@@ -241,7 +254,7 @@ defmodule EDGAR do
   * `cik` - The CIK of the entity
   * `accession_number` - The accession number of the filing
   """
-  def parse_form4_filing(cik, accession_number), do: parse_ownership_filing(cik, accession_number)
+  def form4_filing(cik, accession_number), do: ownership_filing(cik, accession_number)
 
   @doc """
   Parses form 5 and 5/A filing types from a given CIK and accession number
@@ -254,7 +267,7 @@ defmodule EDGAR do
   * `cik` - The CIK of the entity
   * `accession_number` - The accession number of the filing
   """
-  def parse_form5_filing(cik, accession_number), do: parse_ownership_filing(cik, accession_number)
+  def form5_filing(cik, accession_number), do: ownership_filing(cik, accession_number)
 
   @doc """
   Parses form 3, 3/A, 4, 4/A, 5, and 5/A ownership filing types from a given CIK and accession number
@@ -267,7 +280,7 @@ defmodule EDGAR do
   * `cik` - The CIK of the entity
   * `accession_number` - The accession number of the filing
   """
-  def parse_ownership_filing(cik, accession_number) do
+  def ownership_filing(cik, accession_number) do
     case filing_directory(cik, accession_number) do
       {:ok, dir} ->
         files = dir["directory"]["item"]
@@ -280,7 +293,7 @@ defmodule EDGAR do
             acc_no = String.replace(accession_number, "-", "")
             xml_file_url = "#{@edgar_archives_url}/data/#{cik}/#{acc_no}/#{xml_file["name"]}"
 
-            parse_ownership_filing_from_url(xml_file_url)
+            ownership_filing_from_url(xml_file_url)
         end
 
       error ->
@@ -295,7 +308,7 @@ defmodule EDGAR do
 
   * `url` - The url of the form 3 filing
   """
-  def parse_form3_from_url(url), do: parse_ownership_filing_from_url(url)
+  def form3_from_url(url), do: ownership_filing_from_url(url)
 
   @doc """
   Parses form 4 and 4/A ownership filing types from a given url
@@ -304,7 +317,7 @@ defmodule EDGAR do
 
   * `url` - The url of the form 3 filing
   """
-  def parse_form4_from_url(url), do: parse_ownership_filing_from_url(url)
+  def form4_from_url(url), do: ownership_filing_from_url(url)
 
   @doc """
   Parses form 5 and 5/A ownership filing types from a given url
@@ -313,7 +326,7 @@ defmodule EDGAR do
 
   * `url` - The url of the form 3 filing
   """
-  def parse_form5_from_url(url), do: parse_ownership_filing_from_url(url)
+  def form5_from_url(url), do: ownership_filing_from_url(url)
 
   @doc """
   Parses form 3, 3/A, 4, 4/A, 5, and 5/A ownership filing types from a given url
@@ -325,7 +338,7 @@ defmodule EDGAR do
 
   * `url` - The url of the form 4 filing
   """
-  def parse_ownership_filing_from_url(url) do
+  def ownership_filing_from_url(url) do
     with {:ok, body} <- get(url),
          result <- parse_ownership_form(body) do
       result
@@ -353,7 +366,7 @@ defmodule EDGAR do
   * `cik` - The CIK of the entity
   * `accession_number` - The accession number of the filing
   """
-  def parse_form13f_filing(cik, accession_number) do
+  def form13f_filing(cik, accession_number) do
     case filing_directory(cik, accession_number) do
       {:ok, dir} ->
         files = dir["directory"]["item"]
@@ -374,8 +387,8 @@ defmodule EDGAR do
           table_xml_url =
             "#{@edgar_archives_url}/data/#{cik}/#{acc_no}/#{table_xml_file["name"]}"
 
-          with {:ok, document} <- parse_form13f_document_from_url(primary_doc_url),
-               {:ok, table} <- parse_form13f_table_from_url(table_xml_url) do
+          with {:ok, document} <- form13f_document_from_url(primary_doc_url),
+               {:ok, table} <- form13f_table_from_url(table_xml_url) do
             {:ok, %{document: document, table: table}}
           else
             error -> error
@@ -397,9 +410,9 @@ defmodule EDGAR do
   * `url` - The url of the form 13F document filing
 
   """
-  def parse_form13f_document_from_url(url) do
+  def form13f_document_from_url(url) do
     with {:ok, body} <- get(url),
-         result <- parse_13f_document(body) do
+         result <- parse_form13f_document(body) do
       result
     end
   end
@@ -411,9 +424,9 @@ defmodule EDGAR do
 
   * `url` - The url of the form 13F table filing
   """
-  def parse_form13f_table_from_url(url) do
+  def form13f_table_from_url(url) do
     with {:ok, body} <- get(url),
-         result <- parse_13f_table(body) do
+         result <- parse_form13f_table(body) do
       result
     end
   end
@@ -425,17 +438,16 @@ defmodule EDGAR do
 
   * `xml` - The document xml to parse
   """
-  def parse_13f_document(xml), do: EDGAR.Native.parse_13f_document(xml)
+  def parse_form13f_document(xml), do: EDGAR.Native.parse_form13f_document(xml)
 
   @doc """
-
   Parses a form 13F filing table
 
   ## Required
 
   * `xml` - The table xml to parse
   """
-  def parse_13f_table(xml), do: EDGAR.Native.parse_13f_table(xml)
+  def parse_form13f_table(xml), do: EDGAR.Native.parse_form13f_table(xml)
 
   @doc """
   Parses a xbrl filing from a given url
@@ -444,7 +456,7 @@ defmodule EDGAR do
 
   * `url` - The url of the xbrl filing
   """
-  def parse_xbrl_from_url(url) do
+  def xbrl_from_url(url) do
     with {:ok, body} <- get(url),
          result <- parse_xbrl(body) do
       result
