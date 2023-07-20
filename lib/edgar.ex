@@ -5,6 +5,9 @@ defmodule EDGAR do
   @edgar_data_url "https://data.sec.gov"
   @edgar_files_url "https://www.sec.gov/files"
 
+  @type success_type(inner) :: {:ok, inner}
+  @type error_type :: {:error, String.t()}
+
   def start(_type, _args) do
     children = [
       {SimpleRateLimiter, interval: 1_000, max: 10}
@@ -15,12 +18,109 @@ defmodule EDGAR do
   end
 
   @doc """
+  Fetches the daily index
+  """
+  @spec daily_index :: success_type(map()) | error_type()
+  def daily_index, do: get_json("#{@edgar_archives_url}/daily-index/index.json")
+
+  @doc """
+  Fetches the daily index for a given year
+
+  ## Required
+
+  * `year` - The year of the daily index
+  """
+  @spec daily_index(year :: integer()) :: success_type(map()) | error_type()
+  def daily_index(year) do
+    if year < 1993 do
+      {:error, "invalid year (must be greater than 1993)"}
+    end
+
+    year = Integer.to_string(year)
+    get_json("#{@edgar_archives_url}/daily-index/#{year}/index.json")
+  end
+
+  @doc """
+  Fetches the daily index for a given year and quarter
+
+  ## Required
+
+  * `year` - The year of the daily index
+  * `quarter` - The quarter of the daily index
+  """
+  @spec daily_index(year :: integer(), quarter :: integer()) ::
+          success_type(map()) | error_type()
+  def daily_index(year, quarter) do
+    cond do
+      year < 1994 ->
+        {:error, "invalid year (must be 1994 or greater)"}
+
+      quarter > 4 || quarter < 1 ->
+        {:error, "invalid quarter (must be between 1 and 4)"}
+
+      true ->
+        year_str = Integer.to_string(year)
+        quarter_str = Integer.to_string(quarter)
+        get_json("#{@edgar_archives_url}/daily-index/#{year_str}/QTR#{quarter_str}/index.json")
+    end
+  end
+
+  @doc """
+  Fetches the full index
+  """
+  @spec full_index :: success_type(map()) | error_type()
+  def full_index, do: get_json("#{@edgar_archives_url}/full-index/index.json")
+
+  @doc """
+  Fetches the full index for a given year
+
+  ## Required
+
+  * `year` - The year of the full index
+  """
+  @spec full_index(year :: integer()) :: success_type(map()) | error_type()
+  def full_index(year) do
+    if year < 1993 do
+      {:error, "invalid year (must be greater than 1993)"}
+    end
+
+    year = Integer.to_string(year)
+    get_json("#{@edgar_archives_url}/full-index/#{year}/index.json")
+  end
+
+  @doc """
+  Fetches the full index for a given year and quarter
+
+  ## Required
+
+  * `year` - The year of the full index
+  * `quarter` - The quarter of the full index
+  """
+  @spec full_index(year :: integer(), quarter :: integer()) ::
+          success_type(map()) | error_type()
+  def full_index(year, quarter) do
+    cond do
+      year < 1994 ->
+        {:error, "invalid year (must be 1994 or greater)"}
+
+      quarter > 4 || quarter < 1 ->
+        {:error, "invalid quarter (must be between 1 and 4)"}
+
+      true ->
+        year_str = Integer.to_string(year)
+        quarter_str = Integer.to_string(quarter)
+        get_json("#{@edgar_archives_url}/full-index/#{year_str}/QTR#{quarter_str}/index.json")
+    end
+  end
+
+  @doc """
   Fetches the entity directory
 
   ## Required
 
   * `cik` - The CIK of the entity
   """
+  @spec entity_directory(cik :: String.t()) :: success_type(map()) | error_type()
   def entity_directory(cik) do
     cik = String.pad_leading(cik, 10, "0")
 
@@ -36,6 +136,8 @@ defmodule EDGAR do
   * `cik` - The CIK of the entity
   * `accession_number` - The accession number of the filing
   """
+  @spec filing_directory(cik :: String.t(), accession_number :: String.t()) ::
+          success_type(map()) | error_type()
   def filing_directory(cik, accession_number) do
     accession_number = String.replace(accession_number, "-", "")
 
@@ -46,6 +148,7 @@ defmodule EDGAR do
   @doc """
   Fetches a list of company tickers
   """
+  @spec company_tickers :: success_type(list()) | error_type()
   def company_tickers() do
     resp = get_json("#{@edgar_files_url}/company_tickers.json")
 
@@ -65,6 +168,7 @@ defmodule EDGAR do
 
   * `ticker` - The ticker of the company
   """
+  @spec cik_for_ticker(ticker :: String.t()) :: success_type(String.t()) | error_type()
   def cik_for_ticker(ticker) do
     ticker = String.upcase(ticker)
 
@@ -74,7 +178,7 @@ defmodule EDGAR do
 
         case ticker_data do
           nil ->
-            {:error, :not_found}
+            {:error, "ticker not found"}
 
           _ ->
             {:ok, Integer.to_string(ticker_data["cik_str"])}
@@ -92,6 +196,7 @@ defmodule EDGAR do
 
   * `cik` - The CIK of the entity
   """
+  @spec submissions(cik :: String.t()) :: success_type(map()) | error_type()
   def submissions(cik) do
     cik = String.pad_leading(cik, 10, "0")
 
@@ -106,6 +211,7 @@ defmodule EDGAR do
 
   * `cik` - The CIK of the entity
   """
+  @spec company_facts(cik :: String.t()) :: success_type(map()) | error_type()
   def company_facts(cik) do
     cik = String.pad_leading(cik, 10, "0")
 
@@ -122,6 +228,8 @@ defmodule EDGAR do
   * `taxonomy` - The taxonomy of the concept
   * `tag` - The tag of the concept
   """
+  @spec company_concept(cik :: String.t(), taxonomy :: String.t(), tag :: String.t()) ::
+          success_type(map()) | error_type()
   def company_concept(cik, taxonomy, tag) do
     cik = String.pad_leading(cik, 10, "0")
 
@@ -139,6 +247,13 @@ defmodule EDGAR do
   * `unit` - The unit of the concept
   * `period` - The period of the concept
   """
+  @spec frames(
+          taxonomy :: String.t(),
+          tag :: String.t(),
+          unit :: String.t(),
+          period :: String.t()
+        ) ::
+          success_type(map()) | error_type()
   def frames(taxonomy, tag, unit, period) do
     "#{@edgar_data_url}/api/xbrl/frames/#{taxonomy}/#{tag}/#{unit}/#{period}.json"
     |> get_json()
@@ -157,6 +272,7 @@ defmodule EDGAR do
   * `offset` - The offset of the filings
   * `limit` - The limit of the filings
   """
+  @spec filings(cik :: String.t(), opt :: Map.t()) :: success_type(list()) | error_type()
   def filings(cik, opts \\ %{}) do
     case submissions(cik) do
       {:ok, submissions} ->
@@ -207,7 +323,6 @@ defmodule EDGAR do
     Enum.take(filings, limit)
   end
 
-  @doc false
   defp format_filings(filings) do
     field_names = [
       "acceptanceDateTime",
@@ -241,6 +356,8 @@ defmodule EDGAR do
   * `cik` - The CIK of the entity
   * `accession_number` - The accession number of the filing
   """
+  @spec form3_filing(cik :: String.t(), accession_number :: String.t()) ::
+          success_type(map()) | error_type()
   def form3_filing(cik, accession_number), do: ownership_filing(cik, accession_number)
 
   @doc """
@@ -254,6 +371,8 @@ defmodule EDGAR do
   * `cik` - The CIK of the entity
   * `accession_number` - The accession number of the filing
   """
+  @spec form4_filing(cik :: String.t(), accession_number :: String.t()) ::
+          success_type(map()) | error_type()
   def form4_filing(cik, accession_number), do: ownership_filing(cik, accession_number)
 
   @doc """
@@ -267,6 +386,8 @@ defmodule EDGAR do
   * `cik` - The CIK of the entity
   * `accession_number` - The accession number of the filing
   """
+  @spec form5_filing(cik :: String.t(), accession_number :: String.t()) ::
+          success_type(map()) | error_type()
   def form5_filing(cik, accession_number), do: ownership_filing(cik, accession_number)
 
   @doc """
@@ -280,6 +401,8 @@ defmodule EDGAR do
   * `cik` - The CIK of the entity
   * `accession_number` - The accession number of the filing
   """
+  @spec ownership_filing(cik :: String.t(), accession_number :: String.t()) ::
+          success_type(map()) | error_type()
   def ownership_filing(cik, accession_number) do
     case filing_directory(cik, accession_number) do
       {:ok, dir} ->
@@ -308,6 +431,7 @@ defmodule EDGAR do
 
   * `url` - The url of the form 3 filing
   """
+  @spec form3_from_url(url :: String.t()) :: success_type(map()) | error_type()
   def form3_from_url(url), do: ownership_filing_from_url(url)
 
   @doc """
@@ -317,6 +441,7 @@ defmodule EDGAR do
 
   * `url` - The url of the form 3 filing
   """
+  @spec form4_from_url(url :: String.t()) :: success_type(map()) | error_type()
   def form4_from_url(url), do: ownership_filing_from_url(url)
 
   @doc """
@@ -326,6 +451,7 @@ defmodule EDGAR do
 
   * `url` - The url of the form 3 filing
   """
+  @spec form5_from_url(url :: String.t()) :: success_type(map()) | error_type()
   def form5_from_url(url), do: ownership_filing_from_url(url)
 
   @doc """
@@ -338,6 +464,7 @@ defmodule EDGAR do
 
   * `url` - The url of the form 4 filing
   """
+  @spec ownership_filing_from_url(url :: String.t()) :: success_type(map()) | error_type()
   def ownership_filing_from_url(url) do
     with {:ok, body} <- get(url),
          result <- parse_ownership_form(body) do
@@ -355,6 +482,7 @@ defmodule EDGAR do
 
   * `document` - The document xml to parse
   """
+  @spec parse_ownership_form(document :: String.t()) :: success_type(map()) | error_type()
   def parse_ownership_form(document), do: EDGAR.Native.parse_ownership_form(document)
 
   @doc """
@@ -366,6 +494,8 @@ defmodule EDGAR do
   * `cik` - The CIK of the entity
   * `accession_number` - The accession number of the filing
   """
+  @spec form13f_filing(cik :: String.t(), accession_number :: String.t()) ::
+          success_type(map()) | error_type()
   def form13f_filing(cik, accession_number) do
     case filing_directory(cik, accession_number) do
       {:ok, dir} ->
@@ -410,6 +540,7 @@ defmodule EDGAR do
   * `url` - The url of the form 13F document filing
 
   """
+  @spec form13f_document_from_url(url :: String.t()) :: success_type(map()) | error_type()
   def form13f_document_from_url(url) do
     with {:ok, body} <- get(url),
          result <- parse_form13f_document(body) do
@@ -424,6 +555,7 @@ defmodule EDGAR do
 
   * `url` - The url of the form 13F table filing
   """
+  @spec form13f_table_from_url(url :: String.t()) :: success_type(map()) | error_type()
   def form13f_table_from_url(url) do
     with {:ok, body} <- get(url),
          result <- parse_form13f_table(body) do
@@ -438,6 +570,7 @@ defmodule EDGAR do
 
   * `xml` - The document xml to parse
   """
+  @spec parse_form13f_document(xml :: String.t()) :: success_type(map()) | error_type()
   def parse_form13f_document(xml), do: EDGAR.Native.parse_form13f_document(xml)
 
   @doc """
@@ -447,6 +580,7 @@ defmodule EDGAR do
 
   * `xml` - The table xml to parse
   """
+  @spec parse_form13f_table(xml :: String.t()) :: success_type(map()) | error_type()
   def parse_form13f_table(xml), do: EDGAR.Native.parse_form13f_table(xml)
 
   @doc """
@@ -456,6 +590,7 @@ defmodule EDGAR do
 
   * `url` - The url of the xbrl filing
   """
+  @spec xbrl_from_url(url :: String.t()) :: success_type(map()) | error_type()
   def xbrl_from_url(url) do
     with {:ok, body} <- get(url),
          result <- parse_xbrl(body) do
@@ -470,6 +605,7 @@ defmodule EDGAR do
 
   * `xml` - The XBRL xml to parse
   """
+  @spec parse_xbrl(xml :: String.t()) :: success_type(map()) | error_type()
   def parse_xbrl(xml), do: EDGAR.Native.parse_xbrl(xml)
 
   @doc """
@@ -486,6 +622,7 @@ defmodule EDGAR do
   * `count` - The number of filings to return
 
   """
+  @spec current_feed(opts :: Map.t()) :: success_type(map()) | error_type()
   def current_feed(opts \\ %{}) do
     opts = Map.merge(%{output: "atom"}, opts)
     url = "https://www.sec.gov/cgi-bin/browse-edgar?action=getcurrent&#{URI.encode_query(opts)}"
@@ -503,6 +640,7 @@ defmodule EDGAR do
 
   * `xml` - The RSS feed xml to parse
   """
+  @spec parse_current_feed(xml :: String.t()) :: success_type(map()) | error_type()
   def parse_current_feed(xml), do: EDGAR.Native.parse_current_feed(xml)
 
   @doc """
@@ -519,6 +657,7 @@ defmodule EDGAR do
   * `count` - The number of filings to return
 
   """
+  @spec company_feed(cik :: String.t(), opts :: Map.t()) :: success_type(map()) | error_type()
   def company_feed(cik, opts \\ %{}) do
     opts = Map.merge(%{output: "atom", CIK: cik}, opts)
     url = "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&#{URI.encode_query(opts)}"
@@ -536,11 +675,13 @@ defmodule EDGAR do
 
   * `xml` - The RSS feed xml to parse
   """
+  @spec parse_company_feed(xml :: String.t()) :: success_type(map()) | error_type()
   def parse_company_feed(xml), do: EDGAR.Native.parse_company_feed(xml)
 
   @doc """
   Fetches the press release feed
   """
+  @spec press_release_feed :: success_type(map()) | error_type()
   def press_release_feed do
     url = "https://www.sec.gov/news/pressreleases.rss"
 
@@ -553,6 +694,7 @@ defmodule EDGAR do
   @doc """
   Fetches the speeches and statements feed
   """
+  @spec speeches_and_statements_feed :: success_type(map()) | error_type()
   def speeches_and_statements_feed do
     url = "https://www.sec.gov/news/speeches-statements.rss"
 
@@ -565,6 +707,7 @@ defmodule EDGAR do
   @doc """
   Fetches the speeches feed
   """
+  @spec speeches_feed :: success_type(map()) | error_type()
   def speeches_feed do
     url = "https://www.sec.gov/news/speeches.rss"
 
@@ -577,6 +720,7 @@ defmodule EDGAR do
   @doc """
   Fetches the testimony feed
   """
+  @spec testimony_feed :: success_type(map()) | error_type()
   def testimony_feed do
     url = "https://www.sec.gov/news/testimony.rss"
 
@@ -589,6 +733,7 @@ defmodule EDGAR do
   @doc """
   Fetches the statements feed
   """
+  @spec statements_feed :: success_type(map()) | error_type()
   def statements_feed do
     url = "https://www.sec.gov/news/statements.rss"
 
@@ -601,6 +746,7 @@ defmodule EDGAR do
   @doc """
   Fetches the litigation feed
   """
+  @spec litigation_feed :: success_type(map()) | error_type()
   def litigation_feed do
     url = "https://www.sec.gov/litigation/litreleases.rss"
 
@@ -613,7 +759,8 @@ defmodule EDGAR do
   @doc """
   Fetches the administrative proceedings feed
   """
-  def administrative_roceedings_feed do
+  @spec administrative_proceedings_feed :: success_type(map()) | error_type()
+  def administrative_proceedings_feed do
     url = "https://www.sec.gov/rss/litigation/admin.xml"
 
     with {:ok, body} <- get(url),
@@ -625,6 +772,7 @@ defmodule EDGAR do
   @doc """
   Fetches the trading suspensions feed
   """
+  @spec trading_suspensions_feed :: success_type(map()) | error_type()
   def trading_suspensions_feed do
     url = "https://www.sec.gov/rss/litigation/suspensions.xml"
 
@@ -637,6 +785,7 @@ defmodule EDGAR do
   @doc """
   Fetches the division of corporation finance news feed
   """
+  @spec division_of_corporation_finance_feed :: success_type(map()) | error_type()
   def division_of_corporation_finance_feed do
     url = "https://www.sec.gov/rss/divisions/corpfin/cfnew.xml"
 
@@ -649,6 +798,7 @@ defmodule EDGAR do
   @doc """
   Fetches the division of investment management news feed
   """
+  @spec division_of_investment_management_feed :: success_type(map()) | error_type()
   def division_of_investment_management_feed do
     url = "https://www.sec.gov/rss/divisions/investment/imnews.xml"
 
@@ -661,6 +811,7 @@ defmodule EDGAR do
   @doc """
   Fetches the investor alerts feed
   """
+  @spec investor_alerts_feed :: success_type(map()) | error_type()
   def investor_alerts_feed do
     url = "https://www.sec.gov/rss/investor/alerts"
 
@@ -677,6 +828,7 @@ defmodule EDGAR do
 
   * `xml` - The RSS feed xml to parse
   """
+  @spec parse_rss_feed(xml :: String.t()) :: success_type(map()) | error_type()
   def parse_rss_feed(xml), do: EDGAR.Native.parse_rss_feed(xml)
 
   @doc false
