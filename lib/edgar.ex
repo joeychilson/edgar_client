@@ -833,15 +833,13 @@ defmodule EDGAR do
 
   @doc false
   defp get_json(url) do
-    SimpleRateLimiter.wait_and_proceed(fn ->
-      case get(url) do
-        {:ok, body} ->
-          {:ok, Jason.decode!(body)}
+    case get(url) do
+      {:ok, body} ->
+        {:ok, Jason.decode!(body)}
 
-        {:error, _} = error ->
-          error
-      end
-    end)
+      {:error, _} = error ->
+        error
+    end
   end
 
   @doc false
@@ -858,10 +856,10 @@ defmodule EDGAR do
           {:ok, body}
 
         {:ok, %HTTPoison.Response{status_code: 404}} ->
-          {:error, :not_found}
+          {:error, "resource not found"}
 
         {:ok, %HTTPoison.Response{status_code: code}} ->
-          {:error, {:unexpected_status_code, code}}
+          {:error, "unexpected status code: #{code}"}
 
         {:error, %HTTPoison.Error{reason: reason}} ->
           {:error, reason}

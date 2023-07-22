@@ -36,3 +36,8 @@ edgar_client-*.tar
 
 # Checksum file
 checksum-Elixir.EDGAR.Native.exs
+
+# Editors
+/.idea/
+/.vscode/
+/.zed/

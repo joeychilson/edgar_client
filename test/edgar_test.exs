@@ -10,7 +10,7 @@ defmodule EDGARTest do
 
   test "entity directory not found" do
     entity_directory = EDGAR.entity_directory("1")
-    assert {:error, :not_found} = entity_directory
+    assert {:error, "resource not found"} = entity_directory
   end
 
   test "filing directory found" do
@@ -23,7 +23,7 @@ defmodule EDGARTest do
 
   test "filing directory not found" do
     filing_directory = EDGAR.filing_directory("1", "1")
-    assert {:error, :not_found} = filing_directory
+    assert {:error, "resource not found"} = filing_directory
   end
 
   test "company tickers found" do
@@ -40,7 +40,7 @@ defmodule EDGARTest do
 
   test "cik for ticker not found" do
     cik = EDGAR.cik_for_ticker("1")
-    assert {:error, :not_found} = cik
+    assert {:error, "ticker not found"} = cik
   end
 
   test "submissions found" do
@@ -51,7 +51,7 @@ defmodule EDGARTest do
 
   test "submissions not found" do
     submissions = EDGAR.submissions("1")
-    assert {:error, :not_found} = submissions
+    assert {:error, "resource not found"} = submissions
   end
 
   test "company facts found" do
@@ -62,7 +62,7 @@ defmodule EDGARTest do
 
   test "company facts not found" do
     company_facts = EDGAR.company_facts("1")
-    assert {:error, :not_found} = company_facts
+    assert {:error, "resource not found"} = company_facts
   end
 
   test "company concept found" do
@@ -73,7 +73,7 @@ defmodule EDGARTest do
 
   test "company concept not found" do
     company_concept = EDGAR.company_concept("1", "us-gaap", "AccountsPayableCurrent")
-    assert {:error, :not_found} = company_concept
+    assert {:error, "resource not found"} = company_concept
   end
 
   test "frames found" do
@@ -84,7 +84,7 @@ defmodule EDGARTest do
 
   test "frames not found" do
     frames = EDGAR.frames("us-gaap", "AccountsPayableCurrent", "USD", "CY2019Q1")
-    assert {:error, :not_found} = frames
+    assert {:error, "resource not found"} = frames
   end
 
   test "parsing 13f filing" do

@@ -1,7 +1,7 @@
 defmodule EDGAR.MixProject do
   use Mix.Project
 
-  @version "0.8.0"
+  @version "0.8.1"
   @description "An Elixir-based HTTP Client for SEC's EDGAR"
 
   def project do

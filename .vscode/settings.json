@@ -1,5 +1,0 @@
-{
-    "rust-analyzer.linkedProjects": [
-        "native/edgar_parser/Cargo.toml",
-    ]
-}
