@@ -4,7 +4,7 @@
 
 ```elixir
 Mix.install([
-  {:edgar_client, "~> 0.8.0"},
+  {:edgar_client, "~> 0.8.1"},
   {:kino_vega_lite, "~> 0.1.7"},
   {:kino_explorer, "~> 0.1.4"},
   {:kino, "~> 0.10.0"}

@@ -272,7 +272,7 @@ defmodule EDGAR do
   * `offset` - The offset of the filings
   * `limit` - The limit of the filings
   """
-  @spec filings(cik :: String.t(), opt :: Map.t()) :: success_type(list()) | error_type()
+  @spec filings(cik :: String.t(), opt :: map()) :: success_type(list()) | error_type()
   def filings(cik, opts \\ %{}) do
     case submissions(cik) do
       {:ok, submissions} ->
@@ -622,7 +622,7 @@ defmodule EDGAR do
   * `count` - The number of filings to return
 
   """
-  @spec current_feed(opts :: Map.t()) :: success_type(map()) | error_type()
+  @spec current_feed(opts :: map()) :: success_type(map()) | error_type()
   def current_feed(opts \\ %{}) do
     opts = Map.merge(%{output: "atom"}, opts)
     url = "https://www.sec.gov/cgi-bin/browse-edgar?action=getcurrent&#{URI.encode_query(opts)}"
@@ -657,7 +657,7 @@ defmodule EDGAR do
   * `count` - The number of filings to return
 
   """
-  @spec company_feed(cik :: String.t(), opts :: Map.t()) :: success_type(map()) | error_type()
+  @spec company_feed(cik :: String.t(), opts :: map()) :: success_type(map()) | error_type()
   def company_feed(cik, opts \\ %{}) do
     opts = Map.merge(%{output: "atom", CIK: cik}, opts)
     url = "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&#{URI.encode_query(opts)}"
