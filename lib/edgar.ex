@@ -19,46 +19,29 @@ defmodule EDGAR do
 
   @doc """
   Fetches the daily index
-  """
-  @spec daily_index :: success_type(map()) | error_type()
-  def daily_index, do: get_json("#{@edgar_archives_url}/daily-index/index.json")
 
-  @doc """
-  Fetches the daily index for a given year
-
-  ## Required
-
-  * `year` - The year of the daily index
-  """
-  @spec daily_index(year :: integer()) :: success_type(map()) | error_type()
-  def daily_index(year) do
-    if year < 1993 do
-      {:error, "invalid year (must be greater than 1993)"}
-    end
-
-    year = Integer.to_string(year)
-    get_json("#{@edgar_archives_url}/daily-index/#{year}/index.json")
-  end
-
-  @doc """
-  Fetches the daily index for a given year and quarter
-
-  ## Required
+  ## Optional
 
   * `year` - The year of the daily index
   * `quarter` - The quarter of the daily index
   """
-  @spec daily_index(year :: integer(), quarter :: integer()) ::
+  @spec daily_index(year :: nil | integer(), quarter :: nil | integer()) ::
           success_type(map()) | error_type()
-  def daily_index(year, quarter) do
-    cond do
-      year < 1994 ->
+  def daily_index(year \\ nil, quarter \\ nil) do
+    case {year, quarter} do
+      {nil, nil} ->
+        get_json("#{@edgar_archives_url}/daily-index/index.json")
+
+      {year, _} when year < 1994 ->
         {:error, "invalid year (must be 1994 or greater)"}
 
-      quarter > 4 || quarter < 1 ->
+      {year, nil} ->
+        get_json("#{@edgar_archives_url}/daily-index/#{Integer.to_string(year)}/index.json")
+
+      {_, quarter} when quarter < 1 or quarter > 4 ->
         {:error, "invalid quarter (must be between 1 and 4)"}
 
-      true ->
+      {year, quarter} ->
         year_str = Integer.to_string(year)
         quarter_str = Integer.to_string(quarter)
         get_json("#{@edgar_archives_url}/daily-index/#{year_str}/QTR#{quarter_str}/index.json")
@@ -67,50 +50,390 @@ defmodule EDGAR do
 
   @doc """
   Fetches the full index
-  """
-  @spec full_index :: success_type(map()) | error_type()
-  def full_index, do: get_json("#{@edgar_archives_url}/full-index/index.json")
 
-  @doc """
-  Fetches the full index for a given year
-
-  ## Required
-
-  * `year` - The year of the full index
-  """
-  @spec full_index(year :: integer()) :: success_type(map()) | error_type()
-  def full_index(year) do
-    if year < 1993 do
-      {:error, "invalid year (must be greater than 1993)"}
-    end
-
-    year = Integer.to_string(year)
-    get_json("#{@edgar_archives_url}/full-index/#{year}/index.json")
-  end
-
-  @doc """
-  Fetches the full index for a given year and quarter
-
-  ## Required
+  ## Optional
 
   * `year` - The year of the full index
   * `quarter` - The quarter of the full index
   """
-  @spec full_index(year :: integer(), quarter :: integer()) ::
+  @spec full_index(year :: nil | integer(), quarter :: nil | integer()) ::
           success_type(map()) | error_type()
-  def full_index(year, quarter) do
-    cond do
-      year < 1994 ->
+  def full_index(year \\ nil, quarter \\ nil) do
+    case {year, quarter} do
+      {nil, nil} ->
+        get_json("#{@edgar_archives_url}/full-index/index.json")
+
+      {year, _} when year < 1994 ->
         {:error, "invalid year (must be 1994 or greater)"}
 
-      quarter > 4 || quarter < 1 ->
+      {year, nil} ->
+        get_json("#{@edgar_archives_url}/full-index/#{Integer.to_string(year)}/index.json")
+
+      {_, quarter} when quarter < 1 or quarter > 4 ->
         {:error, "invalid quarter (must be between 1 and 4)"}
 
-      true ->
+      {year, quarter} ->
         year_str = Integer.to_string(year)
         quarter_str = Integer.to_string(quarter)
         get_json("#{@edgar_archives_url}/full-index/#{year_str}/QTR#{quarter_str}/index.json")
     end
+  end
+
+  @doc """
+  Parses a company index file from url
+
+  ## Required
+
+  * `url` - The url to the company index file to parse
+  """
+  @spec company_index_from_url(url :: String.t()) :: success_type(list(map())) | error_type()
+  def company_index_from_url(url) do
+    case get(url) do
+      {:ok, file} ->
+        company_index_from_string(file)
+
+      {:error, error} ->
+        {:error, error}
+    end
+  end
+
+  @doc """
+  Parses a company index file from file
+
+  ## Required
+
+  * `file_path` - The path to the company index file to parse
+  """
+  @spec company_index_from_file(file_path :: String.t()) ::
+          success_type(list(map())) | error_type()
+  def company_index_from_file(file_path) do
+    case File.read(file_path) do
+      {:ok, file_content} ->
+        company_index_from_string(file_content)
+
+      {:error, error} ->
+        {:error, error}
+    end
+  end
+
+  @doc """
+  Parses a company index file from string
+
+  ## Required
+
+  * `file_content` - The content of the company index file to parse
+  """
+  @spec company_index_from_string(file_content :: String.t()) ::
+          success_type(list(map())) | error_type()
+  def company_index_from_string(file_content) do
+    file_content
+    |> String.split("\n")
+    |> Enum.drop_while(&(!String.match?(&1, ~r/^-+$/)))
+    |> Enum.drop(1)
+    |> Stream.map(fn line ->
+      case Regex.scan(~r/(.{60})(.{10})(.{12})(.{14})(.+)/, String.trim(line)) do
+        [match] ->
+          [_, company_name, form_type, cik, date_filed, file_name] =
+            Enum.map(match, &String.trim/1)
+
+          %{
+            "company_name" => company_name,
+            "form_type" => form_type,
+            "cik" => cik,
+            "date_filed" => date_filed,
+            "file_name" => file_name
+          }
+
+        _ ->
+          nil
+      end
+    end)
+    |> Enum.reject(&is_nil/1)
+    |> (&{:ok, &1}).()
+  end
+
+  @doc """
+  Parses a crawler index file from url
+
+  ## Required
+
+  * `url` - The url to the crawler index file to parse
+  """
+  @spec crawler_index_from_url(url :: String.t()) :: success_type(list(map())) | error_type()
+  def crawler_index_from_url(url) do
+    case get(url) do
+      {:ok, file} ->
+        crawler_index_from_string(file)
+
+      {:error, error} ->
+        {:error, error}
+    end
+  end
+
+  @doc """
+  Parses a crawler index file from file
+
+  ## Required
+
+  * `file_path` - The path to the crawler index file to parse
+  """
+  @spec crawler_index_from_file(file_path :: String.t()) ::
+          success_type(list(map())) | error_type()
+  def crawler_index_from_file(file_path) do
+    case File.read(file_path) do
+      {:ok, file_content} ->
+        crawler_index_from_string(file_content)
+
+      {:error, error} ->
+        {:error, error}
+    end
+  end
+
+  @doc """
+  Parses a crawler index file from a string
+
+  ## Required
+
+  * `file_content` - The content of the crawler index file to parse
+  """
+  def crawler_index_from_string(file_content) do
+    file_content
+    |> String.split("\n")
+    |> Enum.drop_while(&(!String.match?(&1, ~r/^-+$/)))
+    |> Enum.drop(1)
+    |> Stream.map(fn line ->
+      case Regex.scan(~r/(.{60})(.{10})(.{12})(.{12})(.+)/, String.trim(line)) do
+        [match] ->
+          [_, company_name, form_type, cik, date_filed, url] =
+            Enum.map(match, &String.trim/1)
+
+          %{
+            "company_name" => company_name,
+            "form_type" => form_type,
+            "cik" => cik,
+            "date_filed" => date_filed,
+            "url" => url
+          }
+
+        _ ->
+          nil
+      end
+    end)
+    |> Enum.reject(&is_nil/1)
+    |> (&{:ok, &1}).()
+  end
+
+  @doc """
+  Parses a form index file from url
+
+  ## Required
+
+  * `url` - The url to the form index file to parse
+  """
+  @spec form_index_from_url(url :: String.t()) :: success_type(list(map())) | error_type()
+  def form_index_from_url(url) do
+    case get(url) do
+      {:ok, file} ->
+        form_index_from_string(file)
+
+      {:error, error} ->
+        {:error, error}
+    end
+  end
+
+  @doc """
+  Parses a form index file from file
+
+  ## Required
+
+  * `file_path` - The path to the form index file to parse
+  """
+  @spec form_index_from_file(file_path :: String.t()) ::
+          success_type(list(map())) | error_type()
+  def form_index_from_file(file_path) do
+    case File.read(file_path) do
+      {:ok, file_content} ->
+        form_index_from_string(file_content)
+
+      {:error, error} ->
+        {:error, error}
+    end
+  end
+
+  @doc """
+  Parses a form index file from a string
+
+  ## Required
+
+  * `file_content` - The content of the form index file to parse
+  """
+  def form_index_from_string(file_content) do
+    file_content
+    |> String.split("\n")
+    |> Enum.drop_while(&(!String.match?(&1, ~r/^-+$/)))
+    |> Enum.drop(1)
+    |> Stream.map(fn line ->
+      case Regex.scan(~r/(.{10})(.{60})(.{12})(.{12})(.+)/, String.trim(line)) do
+        [match] ->
+          [_, form_type, company_name, cik, date_filed, file_name] =
+            Enum.map(match, &String.trim/1)
+
+          %{
+            "form_type" => form_type,
+            "company_name" => company_name,
+            "cik" => cik,
+            "date_filed" => date_filed,
+            "file_name" => file_name
+          }
+
+        _ ->
+          nil
+      end
+    end)
+    |> Enum.reject(&is_nil/1)
+    |> (&{:ok, &1}).()
+  end
+
+  @doc """
+  Parses a xbrl index file from url
+
+  ## Required
+
+  * `url` - The url to the xbrl file to parse
+  """
+  @spec xbrl_index_from_url(url :: String.t()) :: success_type(list(map())) | error_type()
+  def xbrl_index_from_url(url) do
+    case get(url) do
+      {:ok, file} ->
+        xbrl_index_from_string(file)
+
+      {:error, error} ->
+        {:error, error}
+    end
+  end
+
+  @doc """
+  Parses a xbrl index file from file
+
+  ## Required
+
+  * `file_path` - The path to the xbrl file to parse
+  """
+  @spec xbrl_index_from_file(file_path :: String.t()) ::
+          success_type(list(map())) | error_type()
+  def xbrl_index_from_file(file_path) do
+    case File.read(file_path) do
+      {:ok, file_content} ->
+        xbrl_index_from_string(file_content)
+
+      {:error, error} ->
+        {:error, error}
+    end
+  end
+
+  @doc """
+  Parses a xbrl index file from a string
+
+  ## Required
+
+  * `file_content` - The content of the xbrl index file to parse
+  """
+  def xbrl_index_from_string(file_content) do
+    file_content
+    |> String.split("\n")
+    |> Enum.drop_while(&(!String.match?(&1, ~r/^-+$/)))
+    |> Enum.drop(1)
+    |> Stream.map(fn line ->
+      case Regex.scan(~r/^(.*?)\|(.*?)\|(.*?)\|(.*?)\|(.*?)$/, String.trim(line)) do
+        [match] ->
+          [_, cik, company_name, form_type, date_filed, file_name] =
+            Enum.map(match, &String.trim/1)
+
+          %{
+            "form_type" => form_type,
+            "company_name" => company_name,
+            "cik" => cik,
+            "date_filed" => date_filed,
+            "file_name" => file_name
+          }
+
+        _ ->
+          nil
+      end
+    end)
+    |> Enum.reject(&is_nil/1)
+    |> (&{:ok, &1}).()
+  end
+
+  @doc """
+  Parses a master index file from url
+
+  ## Required
+
+  * `url` - The url to the master file to parse
+  """
+  @spec master_index_from_url(url :: String.t()) :: success_type(list(map())) | error_type()
+  def master_index_from_url(url) do
+    case get(url) do
+      {:ok, file} ->
+        master_index_from_string(file)
+
+      {:error, error} ->
+        {:error, error}
+    end
+  end
+
+  @doc """
+  Parses a master index file from file
+
+  ## Required
+
+  * `file_path` - The path to the master file to parse
+  """
+  @spec master_index_from_file(file_path :: String.t()) ::
+          success_type(list(map())) | error_type()
+  def master_index_from_file(file_path) do
+    case File.read(file_path) do
+      {:ok, file_content} ->
+        master_index_from_string(file_content)
+
+      {:error, error} ->
+        {:error, error}
+    end
+  end
+
+  @doc """
+  Parses a master index file from a string
+
+  ## Required
+
+  * `file_content` - The content of the master index file to parse
+  """
+  def master_index_from_string(file_content) do
+    file_content
+    |> String.split("\n")
+    |> Enum.drop_while(&(!String.match?(&1, ~r/^-+$/)))
+    |> Enum.drop(1)
+    |> Stream.map(fn line ->
+      case Regex.scan(~r/^(.*?)\|(.*?)\|(.*?)\|(.*?)\|(.*?)$/, String.trim(line)) do
+        [match] ->
+          [_, cik, company_name, form_type, date_filed, file_name] =
+            Enum.map(match, &String.trim/1)
+
+          %{
+            "form_type" => form_type,
+            "company_name" => company_name,
+            "cik" => cik,
+            "date_filed" => date_filed,
+            "file_name" => file_name
+          }
+
+        _ ->
+          nil
+      end
+    end)
+    |> Enum.reject(&is_nil/1)
+    |> (&{:ok, &1}).()
   end
 
   @doc """
@@ -356,9 +679,39 @@ defmodule EDGAR do
   * `cik` - The CIK of the entity
   * `accession_number` - The accession number of the filing
   """
-  @spec form3_filing(cik :: String.t(), accession_number :: String.t()) ::
+  @spec form3_from_filing(cik :: String.t(), accession_number :: String.t()) ::
           success_type(map()) | error_type()
-  def form3_filing(cik, accession_number), do: ownership_filing(cik, accession_number)
+  def form3_from_filing(cik, accession_number), do: ownership_from_filing(cik, accession_number)
+
+  @doc """
+  Parses form 3 and 3/A ownership filing types from a given file path
+
+  ## Required
+
+  * `file_path` - The path of the form 3 filing to parse
+  """
+  @spec form3_from_file(file_path :: String.t()) :: success_type(map()) | error_type()
+  def form3_from_file(file_path), do: ownership_form_from_file(file_path)
+
+  @doc """
+  Parses form 3 and 3/A ownership filing types from a given url
+
+  ## Required
+
+  * `url` - The url of the form 3 filing
+  """
+  @spec form3_from_url(url :: String.t()) :: success_type(map()) | error_type()
+  def form3_from_url(url), do: ownership_form_from_url(url)
+
+  @doc """
+  Parses form 3 and 3/A ownership filing types from a given string
+
+  ## Required
+
+  * `xml_str` - The xml string of the form 3 filing to parse
+  """
+  @spec form3_from_string(xml_str :: String.t()) :: success_type(map()) | error_type()
+  def form3_from_string(xml_str), do: ownership_form_from_string(xml_str)
 
   @doc """
   Parses form 4 and 4/A filing types from a given CIK and accession number
@@ -371,9 +724,39 @@ defmodule EDGAR do
   * `cik` - The CIK of the entity
   * `accession_number` - The accession number of the filing
   """
-  @spec form4_filing(cik :: String.t(), accession_number :: String.t()) ::
+  @spec form4_from_filing(cik :: String.t(), accession_number :: String.t()) ::
           success_type(map()) | error_type()
-  def form4_filing(cik, accession_number), do: ownership_filing(cik, accession_number)
+  def form4_from_filing(cik, accession_number), do: ownership_from_filing(cik, accession_number)
+
+  @doc """
+  Parses form 4 and 4/A ownership filing types from a given file path
+
+  ## Required
+
+  * `file_path` - The path of the form 4 filing to parse
+  """
+  @spec form4_from_file(file_path :: String.t()) :: success_type(map()) | error_type()
+  def form4_from_file(file_path), do: ownership_form_from_file(file_path)
+
+  @doc """
+  Parses form 4 and 4/A ownership filing types from a given url
+
+  ## Required
+
+  * `url` - The url of the form 3 filing
+  """
+  @spec form4_from_url(url :: String.t()) :: success_type(map()) | error_type()
+  def form4_from_url(url), do: ownership_form_from_url(url)
+
+  @doc """
+  Parses form 4 and 4/A ownership filing types from a given string
+
+  ## Required
+
+  * `xml_str` - The xml string of the form 4 filing to parse
+  """
+  @spec form4_from_string(xml_str :: String.t()) :: success_type(map()) | error_type()
+  def form4_from_string(xml_str), do: ownership_form_from_string(xml_str)
 
   @doc """
   Parses form 5 and 5/A filing types from a given CIK and accession number
@@ -386,9 +769,39 @@ defmodule EDGAR do
   * `cik` - The CIK of the entity
   * `accession_number` - The accession number of the filing
   """
-  @spec form5_filing(cik :: String.t(), accession_number :: String.t()) ::
+  @spec form5_from_filing(cik :: String.t(), accession_number :: String.t()) ::
           success_type(map()) | error_type()
-  def form5_filing(cik, accession_number), do: ownership_filing(cik, accession_number)
+  def form5_from_filing(cik, accession_number), do: ownership_from_filing(cik, accession_number)
+
+  @doc """
+  Parses form 5 and 5/A ownership filing types from a given file path
+
+  ## Required
+
+  * `file_path` - The path of the form 5 filing to parse
+  """
+  @spec form5_from_file(file_path :: String.t()) :: success_type(map()) | error_type()
+  def form5_from_file(file_path), do: ownership_form_from_file(file_path)
+
+  @doc """
+  Parses form 5 and 5/A ownership filing types from a given url
+
+  ## Required
+
+  * `url` - The url of the form 3 filing
+  """
+  @spec form5_from_url(url :: String.t()) :: success_type(map()) | error_type()
+  def form5_from_url(url), do: ownership_form_from_url(url)
+
+  @doc """
+  Parses form 5 and 5/A ownership filing types from a given string
+
+  ## Required
+
+  * `xml_str` - The xml string of the form 5 filing to parse
+  """
+  @spec form5_from_string(xml_str :: String.t()) :: success_type(map()) | error_type()
+  def form5_from_string(xml_str), do: ownership_form_from_string(xml_str)
 
   @doc """
   Parses form 3, 3/A, 4, 4/A, 5, and 5/A ownership filing types from a given CIK and accession number
@@ -401,9 +814,9 @@ defmodule EDGAR do
   * `cik` - The CIK of the entity
   * `accession_number` - The accession number of the filing
   """
-  @spec ownership_filing(cik :: String.t(), accession_number :: String.t()) ::
+  @spec ownership_from_filing(cik :: String.t(), accession_number :: String.t()) ::
           success_type(map()) | error_type()
-  def ownership_filing(cik, accession_number) do
+  def ownership_from_filing(cik, accession_number) do
     case filing_directory(cik, accession_number) do
       {:ok, dir} ->
         files = dir["directory"]["item"]
@@ -416,7 +829,7 @@ defmodule EDGAR do
             acc_no = String.replace(accession_number, "-", "")
             xml_file_url = "#{@edgar_archives_url}/data/#{cik}/#{acc_no}/#{xml_file["name"]}"
 
-            ownership_filing_from_url(xml_file_url)
+            ownership_form_from_url(xml_file_url)
         end
 
       error ->
@@ -425,34 +838,19 @@ defmodule EDGAR do
   end
 
   @doc """
-  Parses form 3 and 3/A ownership filing types from a given url
+  Parses form 3, 3/A, 4, 4/A, 5, and 5/A ownership filing types from a file
 
   ## Required
 
-  * `url` - The url of the form 3 filing
+  * `file_path` - The path to the file
   """
-  @spec form3_from_url(url :: String.t()) :: success_type(map()) | error_type()
-  def form3_from_url(url), do: ownership_filing_from_url(url)
-
-  @doc """
-  Parses form 4 and 4/A ownership filing types from a given url
-
-  ## Required
-
-  * `url` - The url of the form 3 filing
-  """
-  @spec form4_from_url(url :: String.t()) :: success_type(map()) | error_type()
-  def form4_from_url(url), do: ownership_filing_from_url(url)
-
-  @doc """
-  Parses form 5 and 5/A ownership filing types from a given url
-
-  ## Required
-
-  * `url` - The url of the form 3 filing
-  """
-  @spec form5_from_url(url :: String.t()) :: success_type(map()) | error_type()
-  def form5_from_url(url), do: ownership_filing_from_url(url)
+  @spec ownership_form_from_file(file_path :: String.t()) :: success_type(map()) | error_type()
+  def ownership_form_from_file(file_path) do
+    with {:ok, body} <- File.read(file_path),
+         result <- ownership_form_from_string(body) do
+      result
+    end
+  end
 
   @doc """
   Parses form 3, 3/A, 4, 4/A, 5, and 5/A ownership filing types from a given url
@@ -462,28 +860,28 @@ defmodule EDGAR do
 
   ## Required
 
-  * `url` - The url of the form 4 filing
+  * `url` - The url of the form 4 to parse
   """
-  @spec ownership_filing_from_url(url :: String.t()) :: success_type(map()) | error_type()
-  def ownership_filing_from_url(url) do
+  @spec ownership_form_from_url(url :: String.t()) :: success_type(map()) | error_type()
+  def ownership_form_from_url(url) do
     with {:ok, body} <- get(url),
-         result <- parse_ownership_form(body) do
+         result <- ownership_form_from_string(body) do
       result
     end
   end
 
   @doc """
-  Parses form 3, 3/A, 4, 4/A, 5, and 5/A filing types.
+  Parses form 3, 3/A, 4, 4/A, 5, and 5/A filing types from a string
 
   Based on the XML schema found here:
   - https://www.sec.gov/info/edgar/specifications/ownershipxmltechspec
 
   ## Required
 
-  * `document` - The document xml to parse
+  * `form_str` - The document string to parse
   """
-  @spec parse_ownership_form(document :: String.t()) :: success_type(map()) | error_type()
-  def parse_ownership_form(document), do: EDGAR.Native.parse_ownership_form(document)
+  @spec ownership_form_from_string(form_str :: String.t()) :: success_type(map()) | error_type()
+  def ownership_form_from_string(form_str), do: EDGAR.Native.parse_ownership_form(form_str)
 
   @doc """
 
@@ -494,9 +892,9 @@ defmodule EDGAR do
   * `cik` - The CIK of the entity
   * `accession_number` - The accession number of the filing
   """
-  @spec form13f_filing(cik :: String.t(), accession_number :: String.t()) ::
+  @spec form13f_from_filing(cik :: String.t(), accession_number :: String.t()) ::
           success_type(map()) | error_type()
-  def form13f_filing(cik, accession_number) do
+  def form13f_from_filing(cik, accession_number) do
     case filing_directory(cik, accession_number) do
       {:ok, dir} ->
         files = dir["directory"]["item"]
@@ -533,17 +931,56 @@ defmodule EDGAR do
   end
 
   @doc """
+  Parses a form 13F document from a given file path
+
+  ## Required
+
+  * `file_path` - The path to the 13F document to parse
+  """
+  @spec form13f_document_from_file(file_path :: String.t()) :: success_type(map()) | error_type()
+  def form13f_document_from_file(file_path) do
+    with {:ok, body} <- File.read(file_path),
+         result <- form13f_document_from_string(body) do
+      result
+    end
+  end
+
+  @doc """
   Parses a form 13F filing from a given url
 
   ## Required
 
-  * `url` - The url of the form 13F document filing
-
+  * `url` - The url of the form 13F document to parse
   """
   @spec form13f_document_from_url(url :: String.t()) :: success_type(map()) | error_type()
   def form13f_document_from_url(url) do
     with {:ok, body} <- get(url),
-         result <- parse_form13f_document(body) do
+         result <- form13f_document_from_string(body) do
+      result
+    end
+  end
+
+  @doc """
+  Parses a form 13F filing primary document from a string
+
+  ## Required
+
+  * `xml_str` - The document xml string to parse
+  """
+  @spec form13f_document_from_string(xml_str :: String.t()) :: success_type(map()) | error_type()
+  def form13f_document_from_string(xml_str), do: EDGAR.Native.parse_form13f_document(xml_str)
+
+  @doc """
+  Parses a form 13F filing table from a file
+
+  ## Required
+
+  * `file_path` - The path to the 13F table file to parse
+  """
+  @spec form13f_table_from_file(file_path :: String.t()) :: success_type(map()) | error_type()
+  def form13f_table_from_file(file_path) do
+    with {:ok, body} <- File.read(file_path),
+         result <- form13f_table_from_string(body) do
       result
     end
   end
@@ -553,47 +990,52 @@ defmodule EDGAR do
 
   ## Required
 
-  * `url` - The url of the form 13F table filing
+  * `url` - The url of the 13F table file to parse
   """
   @spec form13f_table_from_url(url :: String.t()) :: success_type(map()) | error_type()
   def form13f_table_from_url(url) do
     with {:ok, body} <- get(url),
-         result <- parse_form13f_table(body) do
+         result <- form13f_table_from_string(body) do
       result
     end
   end
 
   @doc """
-  Parses a form 13F filing primary document
+  Parses a form 13F filing table from a string
 
   ## Required
 
-  * `xml` - The document xml to parse
+  * `xml_str` - The table xml string to parse
   """
-  @spec parse_form13f_document(xml :: String.t()) :: success_type(map()) | error_type()
-  def parse_form13f_document(xml), do: EDGAR.Native.parse_form13f_document(xml)
+  @spec form13f_table_from_string(xml_str :: String.t()) :: success_type(map()) | error_type()
+  def form13f_table_from_string(xml_str), do: EDGAR.Native.parse_form13f_table(xml_str)
 
   @doc """
-  Parses a form 13F filing table
+  Parses a xbrl filing file from a given file path
 
   ## Required
 
-  * `xml` - The table xml to parse
+  * `file_path` - The path of the xbrl filing to parse
   """
-  @spec parse_form13f_table(xml :: String.t()) :: success_type(map()) | error_type()
-  def parse_form13f_table(xml), do: EDGAR.Native.parse_form13f_table(xml)
+  @spec xbrl_from_file(file_path :: String.t()) :: success_type(map()) | error_type()
+  def xbrl_from_file(file_path) do
+    with {:ok, file_content} <- File.read(file_path),
+         result <- xbrl_from_string(file_content) do
+      result
+    end
+  end
 
   @doc """
   Parses a xbrl filing from a given url
 
   ## Required
 
-  * `url` - The url of the xbrl filing
+  * `url` - The url of the xbrl filing to parse
   """
   @spec xbrl_from_url(url :: String.t()) :: success_type(map()) | error_type()
   def xbrl_from_url(url) do
     with {:ok, body} <- get(url),
-         result <- parse_xbrl(body) do
+         result <- xbrl_from_string(body) do
       result
     end
   end
@@ -603,10 +1045,10 @@ defmodule EDGAR do
 
   ## Required
 
-  * `xml` - The XBRL xml to parse
+  * `xbrl_str` - The XBRL xml string to parse
   """
-  @spec parse_xbrl(xml :: String.t()) :: success_type(map()) | error_type()
-  def parse_xbrl(xml), do: EDGAR.Native.parse_xbrl(xml)
+  @spec xbrl_from_string(xbrl_str :: String.t()) :: success_type(map()) | error_type()
+  def xbrl_from_string(xbrl_str), do: EDGAR.Native.parse_xbrl(xbrl_str)
 
   @doc """
   Fetches the current feed for a given CIK
@@ -620,7 +1062,6 @@ defmodule EDGAR do
   * `owner` - The owner to filter by
   * `start` - The start index of the filings to return
   * `count` - The number of filings to return
-
   """
   @spec current_feed(opts :: map()) :: success_type(map()) | error_type()
   def current_feed(opts \\ %{}) do
@@ -628,7 +1069,7 @@ defmodule EDGAR do
     url = "https://www.sec.gov/cgi-bin/browse-edgar?action=getcurrent&#{URI.encode_query(opts)}"
 
     with {:ok, body} <- get(url),
-         result <- parse_current_feed(body) do
+         result <- current_feed_from_string(body) do
       result
     end
   end
@@ -638,10 +1079,10 @@ defmodule EDGAR do
 
   ## Required
 
-  * `xml` - The RSS feed xml to parse
+  * `xml_str` - The RSS feed xml to parse
   """
-  @spec parse_current_feed(xml :: String.t()) :: success_type(map()) | error_type()
-  def parse_current_feed(xml), do: EDGAR.Native.parse_current_feed(xml)
+  @spec current_feed_from_string(xml_str :: String.t()) :: success_type(map()) | error_type()
+  def current_feed_from_string(xml_str), do: EDGAR.Native.parse_current_feed(xml_str)
 
   @doc """
   Fetches the company feed for a given CIK
@@ -655,7 +1096,6 @@ defmodule EDGAR do
   * `type` - The type of filing to filter by
   * `start` - The start index of the filings to return
   * `count` - The number of filings to return
-
   """
   @spec company_feed(cik :: String.t(), opts :: map()) :: success_type(map()) | error_type()
   def company_feed(cik, opts \\ %{}) do
@@ -663,7 +1103,7 @@ defmodule EDGAR do
     url = "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&#{URI.encode_query(opts)}"
 
     with {:ok, body} <- get(url),
-         result <- parse_company_feed(body) do
+         result <- company_feed_from_string(body) do
       result
     end
   end
@@ -673,10 +1113,10 @@ defmodule EDGAR do
 
   ## Required
 
-  * `xml` - The RSS feed xml to parse
+  * `xml_str` - The RSS feed xml string to parse
   """
-  @spec parse_company_feed(xml :: String.t()) :: success_type(map()) | error_type()
-  def parse_company_feed(xml), do: EDGAR.Native.parse_company_feed(xml)
+  @spec company_feed_from_string(xml_str :: String.t()) :: success_type(map()) | error_type()
+  def company_feed_from_string(xml_str), do: EDGAR.Native.parse_company_feed(xml_str)
 
   @doc """
   Fetches the press release feed
@@ -686,7 +1126,7 @@ defmodule EDGAR do
     url = "https://www.sec.gov/news/pressreleases.rss"
 
     with {:ok, body} <- get(url),
-         result <- parse_rss_feed(body) do
+         result <- rss_feed_from_string(body) do
       result
     end
   end
@@ -699,7 +1139,7 @@ defmodule EDGAR do
     url = "https://www.sec.gov/news/speeches-statements.rss"
 
     with {:ok, body} <- get(url),
-         result <- parse_rss_feed(body) do
+         result <- rss_feed_from_string(body) do
       result
     end
   end
@@ -712,7 +1152,7 @@ defmodule EDGAR do
     url = "https://www.sec.gov/news/speeches.rss"
 
     with {:ok, body} <- get(url),
-         result <- parse_rss_feed(body) do
+         result <- rss_feed_from_string(body) do
       result
     end
   end
@@ -725,7 +1165,7 @@ defmodule EDGAR do
     url = "https://www.sec.gov/news/testimony.rss"
 
     with {:ok, body} <- get(url),
-         result <- parse_rss_feed(body) do
+         result <- rss_feed_from_string(body) do
       result
     end
   end
@@ -738,7 +1178,7 @@ defmodule EDGAR do
     url = "https://www.sec.gov/news/statements.rss"
 
     with {:ok, body} <- get(url),
-         result <- parse_rss_feed(body) do
+         result <- rss_feed_from_string(body) do
       result
     end
   end
@@ -751,7 +1191,7 @@ defmodule EDGAR do
     url = "https://www.sec.gov/litigation/litreleases.rss"
 
     with {:ok, body} <- get(url),
-         result <- parse_rss_feed(body) do
+         result <- rss_feed_from_string(body) do
       result
     end
   end
@@ -764,7 +1204,7 @@ defmodule EDGAR do
     url = "https://www.sec.gov/rss/litigation/admin.xml"
 
     with {:ok, body} <- get(url),
-         result <- parse_rss_feed(body) do
+         result <- rss_feed_from_string(body) do
       result
     end
   end
@@ -777,7 +1217,7 @@ defmodule EDGAR do
     url = "https://www.sec.gov/rss/litigation/suspensions.xml"
 
     with {:ok, body} <- get(url),
-         result <- parse_rss_feed(body) do
+         result <- rss_feed_from_string(body) do
       result
     end
   end
@@ -790,7 +1230,7 @@ defmodule EDGAR do
     url = "https://www.sec.gov/rss/divisions/corpfin/cfnew.xml"
 
     with {:ok, body} <- get(url),
-         result <- parse_rss_feed(body) do
+         result <- rss_feed_from_string(body) do
       result
     end
   end
@@ -803,7 +1243,7 @@ defmodule EDGAR do
     url = "https://www.sec.gov/rss/divisions/investment/imnews.xml"
 
     with {:ok, body} <- get(url),
-         result <- parse_rss_feed(body) do
+         result <- rss_feed_from_string(body) do
       result
     end
   end
@@ -816,20 +1256,20 @@ defmodule EDGAR do
     url = "https://www.sec.gov/rss/investor/alerts"
 
     with {:ok, body} <- get(url),
-         result <- parse_rss_feed(body) do
+         result <- rss_feed_from_string(body) do
       result
     end
   end
 
   @doc """
-  Parses the press release feed
+  Parses the press release feed from a string
 
   ## Required
 
-  * `xml` - The RSS feed xml to parse
+  * `xml_str` - The RSS feed xml string to parse
   """
-  @spec parse_rss_feed(xml :: String.t()) :: success_type(map()) | error_type()
-  def parse_rss_feed(xml), do: EDGAR.Native.parse_rss_feed(xml)
+  @spec rss_feed_from_string(xml_str :: String.t()) :: success_type(map()) | error_type()
+  def rss_feed_from_string(xml_str), do: EDGAR.Native.parse_rss_feed(xml_str)
 
   @doc false
   defp get_json(url) do

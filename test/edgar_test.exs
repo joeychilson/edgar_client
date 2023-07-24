@@ -88,13 +88,13 @@ defmodule EDGARTest do
   end
 
   test "parsing 13f filing" do
-    form13 = EDGAR.form13f_filing("1067983", "000095012323005270")
+    form13 = EDGAR.form13f_from_filing("1067983", "000095012323005270")
     assert {:ok, form13} = form13
     assert form13.document.header_data.submission_type == "13F-HR"
   end
 
   test "parsing ownership filing" do
-    form4 = EDGAR.ownership_filing("1295032", "000120919122003153")
+    form4 = EDGAR.ownership_from_filing("1295032", "000120919122003153")
     assert {:ok, form4} = form4
     assert form4.document_type == "4"
   end
