@@ -1272,13 +1272,40 @@ defmodule EDGAR do
   def rss_feed_from_string(xml_str), do: EDGAR.Native.parse_rss_feed(xml_str)
 
   @doc """
+  Fetches the recent filings rss feed
+  """
+  @spec filings_feed :: success_type(map()) | error_type()
+  def filings_feed do
+    url = "https://www.sec.gov/Archives/edgar/usgaap.rss.xml"
+
+    with {:ok, body} <- get(url),
+         result <- filing_feed_from_string(body) do
+      result
+    end
+  end
+
+  @doc """
+  Fetch the recent mutual funds filings rss feed
+  """
+  @spec mutual_funds_feed :: success_type(map()) | error_type()
+  def mutual_funds_feed do
+    url = "https://www.sec.gov/Archives/edgar/xbrl-rr.rss.xml"
+
+    with {:ok, body} <- get(url),
+         result <- filing_feed_from_string(body) do
+      result
+    end
+  end
+
+  @doc """
   Fetches the recent XBRL rss feed
   """
+  @spec xbrl_feed :: success_type(map()) | error_type()
   def xbrl_feed do
     url = "https://www.sec.gov/Archives/edgar/xbrlrss.all.xml"
 
     with {:ok, body} <- get(url),
-         result <- xbrl_feed_from_string(body) do
+         result <- filing_feed_from_string(body) do
       result
     end
   end
@@ -1286,11 +1313,12 @@ defmodule EDGAR do
   @doc """
   Fetches the recent inline XBRL rss feed
   """
+  @spec inline_xbrl_feed :: success_type(map()) | error_type()
   def inline_xbrl_feed do
     url = "https://www.sec.gov/Archives/edgar/xbrl-inline.rss.xml"
 
     with {:ok, body} <- get(url),
-         result <- xbrl_feed_from_string(body) do
+         result <- filing_feed_from_string(body) do
       result
     end
   end
@@ -1317,21 +1345,21 @@ defmodule EDGAR do
         url = "https://www.sec.gov/Archives/edgar/monthly/xbrlrss-#{year}-#{month}.xml"
 
         with {:ok, body} <- get(url),
-             result <- xbrl_feed_from_string(body) do
+             result <- filing_feed_from_string(body) do
           result
         end
     end
   end
 
   @doc """
-  Parses the XBRL feed from a string
+  Parses a filing feed from a string
 
   ## Required
 
   * `xml_str` - The XBRL feed xml string to parse
   """
-  @spec xbrl_feed_from_string(xml_str :: String.t()) :: success_type(map()) | error_type()
-  def xbrl_feed_from_string(xml_str), do: EDGAR.Native.parse_xbrl_feed(xml_str)
+  @spec filing_feed_from_string(xml_str :: String.t()) :: success_type(map()) | error_type()
+  def filing_feed_from_string(xml_str), do: EDGAR.Native.parse_filing_feed(xml_str)
 
   @doc false
   defp get_json(url) do

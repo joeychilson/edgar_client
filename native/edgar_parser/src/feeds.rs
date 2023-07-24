@@ -1,4 +1,4 @@
-use crate::xml::{get_int32, get_int64, get_string};
+use crate::xml::{get_int32, get_string};
 use roxmltree::Document as XMLDoc;
 use rustler::NifMap;
 
@@ -452,18 +452,18 @@ fn parse_summary(node: &roxmltree::Node) -> Result<Option<Summary>, String> {
 }
 
 #[derive(NifMap)]
-pub struct XBRLFeed {
+pub struct FilingFeed {
     title: Option<String>,
     link: Option<String>,
     description: Option<String>,
     language: Option<String>,
-    items: Vec<XBRLItem>,
+    items: Vec<FilingItem>,
     pub_date: Option<String>,
     last_build_date: Option<String>,
 }
 
 #[derive(NifMap)]
-pub struct XBRLItem {
+pub struct FilingItem {
     title: Option<String>,
     link: Option<String>,
     guid: Option<String>,
@@ -485,14 +485,14 @@ pub struct Filing {
     cik: Option<String>,
     company_name: Option<String>,
     filing_date: Option<String>,
-    acceptance_datetime: Option<i64>,
-    period: Option<i32>,
+    acceptance_datetime: Option<String>,
+    period: Option<String>,
     accession_number: Option<String>,
     file_number: Option<String>,
     form_type: Option<String>,
     assistant_director: Option<String>,
     assigned_sic: Option<i32>,
-    fiscal_year_end: Option<i32>,
+    fiscal_year_end: Option<String>,
     files: Vec<File>,
 }
 
@@ -507,13 +507,12 @@ pub struct File {
 }
 
 #[rustler::nif]
-pub fn parse_xbrl_feed(xml: &str) -> Result<XBRLFeed, String> {
+pub fn parse_filing_feed(xml: &str) -> Result<FilingFeed, String> {
     let doc = XMLDoc::parse(xml).map_err(|e| e.to_string())?;
     let root_node = doc
         .root_element()
         .first_element_child()
         .ok_or_else(|| "Could not find the root element's first child".to_string())?;
-
     let title = get_string(&root_node, "title");
     let link = get_string(&root_node, "link");
     let description = get_string(&root_node, "description");
@@ -533,7 +532,7 @@ pub fn parse_xbrl_feed(xml: &str) -> Result<XBRLFeed, String> {
             let pub_date = get_string(&item_node, "pubDate");
             let filing = parse_filing(&item_node)?;
 
-            Ok::<XBRLItem, String>(XBRLItem {
+            Ok::<FilingItem, String>(FilingItem {
                 title,
                 link,
                 guid,
@@ -543,9 +542,9 @@ pub fn parse_xbrl_feed(xml: &str) -> Result<XBRLFeed, String> {
                 filing,
             })
         })
-        .collect::<Result<Vec<XBRLItem>, String>>()?;
+        .collect::<Result<Vec<FilingItem>, String>>()?;
 
-    Ok(XBRLFeed {
+    Ok(FilingFeed {
         title,
         link,
         description,
@@ -582,14 +581,14 @@ fn parse_filing(node: &roxmltree::Node) -> Result<Option<Filing>, String> {
             let cik = get_string(&filing_node, "cikNumber");
             let company_name = get_string(&filing_node, "companyName");
             let filing_date = get_string(&filing_node, "filingDate");
-            let acceptance_datetime = get_int64(&filing_node, "acceptanceDatetime");
-            let period = get_int32(&filing_node, "period");
+            let acceptance_datetime = get_string(&filing_node, "acceptanceDatetime");
+            let period = get_string(&filing_node, "period");
             let accession_number = get_string(&filing_node, "accessionNumber");
             let file_number = get_string(&filing_node, "fileNumber");
             let form_type = get_string(&filing_node, "formType");
             let assistant_director = get_string(&filing_node, "assistantDirector");
             let assigned_sic = get_int32(&filing_node, "assignedSic");
-            let fiscal_year_end = get_int32(&filing_node, "fiscalYearEnd");
+            let fiscal_year_end = get_string(&filing_node, "fiscalYearEnd");
             let files = parse_files(&filing_node)?;
 
             Ok::<Filing, String>(Filing {
