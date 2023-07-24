@@ -1,4 +1,4 @@
-use crate::{parse_value, Value};
+use crate::xml::{parse_value, Value};
 use roxmltree::Document as XMLDoc;
 use rustler::NifMap;
 use std::collections::HashMap;
@@ -57,7 +57,7 @@ pub fn parse_xbrl(xbrl: &str) -> Result<Document, String> {
         .filter_map(|node| {
             node.attribute("contextRef").and_then(|context_ref| {
                 contexts.get(context_ref).map(|context| {
-                    let tag = node.tag_name().name().to_string();
+                    let concept = node.tag_name().name().to_string();
                     let value_str = node.text().unwrap_or_default().to_string();
                     let value = parse_value(value_str);
                     let decimals = node.attribute("decimals").map(|s| s.to_string());
@@ -69,7 +69,7 @@ pub fn parse_xbrl(xbrl: &str) -> Result<Document, String> {
 
                     Fact {
                         context: context.clone(),
-                        concept: tag,
+                        concept,
                         value,
                         decimals,
                         unit,
@@ -142,7 +142,7 @@ fn parse_contexts(
         let entity_node = context_node
             .children()
             .find(|node| node.has_tag_name("entity"))
-            .unwrap();
+            .ok_or_else(|| "Missing entity node".to_string())?;
         let entity = entity_node
             .children()
             .find(|node| node.has_tag_name("identifier"))
@@ -182,7 +182,8 @@ fn parse_contexts(
         let period_node = context_node
             .children()
             .find(|node| node.has_tag_name("period"))
-            .unwrap();
+            .ok_or_else(|| "No period found".to_string())?;
+
         let period = Period {
             instant: get_date(&period_node, "instant"),
             start_date: get_date(&period_node, "startDate"),

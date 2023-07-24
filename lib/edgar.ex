@@ -22,7 +22,7 @@ defmodule EDGAR do
 
   ## Optional
 
-  * `year` - The year of the daily index
+  * `year` - The year of the daily index (must be 1994 or greater)
   * `quarter` - The quarter of the daily index
   """
   @spec daily_index(year :: nil | integer(), quarter :: nil | integer()) ::
@@ -33,13 +33,13 @@ defmodule EDGAR do
         get_json("#{@edgar_archives_url}/daily-index/index.json")
 
       {year, _} when year < 1994 ->
-        {:error, "invalid year (must be 1994 or greater)"}
+        {:error, "invalid year must be 1994 or greater"}
 
       {year, nil} ->
         get_json("#{@edgar_archives_url}/daily-index/#{Integer.to_string(year)}/index.json")
 
       {_, quarter} when quarter < 1 or quarter > 4 ->
-        {:error, "invalid quarter (must be between 1 and 4)"}
+        {:error, "invalid quarter must be between 1 and 4"}
 
       {year, quarter} ->
         year_str = Integer.to_string(year)
@@ -53,7 +53,7 @@ defmodule EDGAR do
 
   ## Optional
 
-  * `year` - The year of the full index
+  * `year` - The year of the full index (must be 1994 or greater)
   * `quarter` - The quarter of the full index
   """
   @spec full_index(year :: nil | integer(), quarter :: nil | integer()) ::
@@ -1270,6 +1270,68 @@ defmodule EDGAR do
   """
   @spec rss_feed_from_string(xml_str :: String.t()) :: success_type(map()) | error_type()
   def rss_feed_from_string(xml_str), do: EDGAR.Native.parse_rss_feed(xml_str)
+
+  @doc """
+  Fetches the recent XBRL rss feed
+  """
+  def xbrl_feed do
+    url = "https://www.sec.gov/Archives/edgar/xbrlrss.all.xml"
+
+    with {:ok, body} <- get(url),
+         result <- xbrl_feed_from_string(body) do
+      result
+    end
+  end
+
+  @doc """
+  Fetches the recent inline XBRL rss feed
+  """
+  def inline_xbrl_feed do
+    url = "https://www.sec.gov/Archives/edgar/xbrl-inline.rss.xml"
+
+    with {:ok, body} <- get(url),
+         result <- xbrl_feed_from_string(body) do
+      result
+    end
+  end
+
+  @doc """
+  Fetches the historical XBRL feed for the given year and month
+
+  ## Required
+
+  * `year` - The year to fetch the XBRL feed for (must be 2005 or later)
+  * `month` - The month to fetch the XBRL feed for
+  """
+  @spec historical_xbrl_feed(year :: integer(), month :: integer()) ::
+          success_type(map()) | error_type()
+  def historical_xbrl_feed(year, month) do
+    case {year, month} do
+      {year, _} when year < 2005 ->
+        {:error, "invalid year must be 2005 or later"}
+
+      {_, month} when month < 1 or month > 12 ->
+        {:error, "invalid month must be between 1 and 12"}
+
+      {year, month} ->
+        url = "https://www.sec.gov/Archives/edgar/monthly/xbrlrss-#{year}-#{month}.xml"
+
+        with {:ok, body} <- get(url),
+             result <- xbrl_feed_from_string(body) do
+          result
+        end
+    end
+  end
+
+  @doc """
+  Parses the XBRL feed from a string
+
+  ## Required
+
+  * `xml_str` - The XBRL feed xml string to parse
+  """
+  @spec xbrl_feed_from_string(xml_str :: String.t()) :: success_type(map()) | error_type()
+  def xbrl_feed_from_string(xml_str), do: EDGAR.Native.parse_xbrl_feed(xml_str)
 
   @doc false
   defp get_json(url) do

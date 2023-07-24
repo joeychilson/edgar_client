@@ -1,4 +1,4 @@
-use crate::{get_bool, get_string, parse_value, Value};
+use crate::xml::{get_bool, get_string, parse_value, Value};
 use roxmltree::Document as XMLDoc;
 use rustler::NifMap;
 
@@ -194,7 +194,6 @@ pub struct ValueFootnote {
 pub fn parse_ownership_form(xml: &str) -> Result<Document, String> {
     let doc = XMLDoc::parse(xml).map_err(|e| e.to_string())?;
     let root_node = doc.root_element();
-
     let schema_version = get_string(&root_node, "schemaVersion");
     let document_type = get_string(&root_node, "documentType");
     let period_of_report = get_string(&root_node, "periodOfReport");
@@ -204,7 +203,6 @@ pub fn parse_ownership_form(xml: &str) -> Result<Document, String> {
     let form3_holdings_reported = get_bool(&root_node, "form3HoldingsReported");
     let form4_transactions_reported = get_bool(&root_node, "form4TransactionsReported");
     let aff10b5_one = get_bool(&root_node, "aff10b5One");
-
     let issuer = parse_issuer(&root_node)?;
     let reporting_owner = parse_reporting_owner(&root_node)?;
     let non_derivative_table = parse_non_derivative_table(&root_node)?;

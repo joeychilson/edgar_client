@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="windows-1252"?>
+<rss version="2.0">
+  <channel>
+    <title>All XBRL Data Submitted to the SEC for 2023-06</title>
+    <link>https://www.sec.gov/spotlight/xbrl/filings-and-feeds.shtml</link>
+    <atom:link href="https://www.sec.gov/Archives/edgar/monthly/xbrlrss-2023-06.xml" rel="self" type="application/rss+xml" xmlns:atom="https://www.w3.org/2005/Atom"/>
+    <description>This is a list all of the filings containing XBRL for 2023-06</description>
+    <language>en-us</language>
+    <pubDate>Fri, 30 Jun 2023 00:00:00 EDT</pubDate>
+    <lastBuildDate>Fri, 30 Jun 2023 00:00:00 EDT</lastBuildDate>
+    <item>
+      <title>JOHN HANCOCK INVESTORS TRUST (0000759828) (Filer)</title>
+      <link>https://www.sec.gov/Archives/edgar/data/759828/000168386323005351/0001683863-23-005351-index.htm</link>
+      <guid>https://www.sec.gov/Archives/edgar/data/759828/000168386323005351/0001683863-23-005351-xbrl.zip</guid>
+      <enclosure url="https://www.sec.gov/Archives/edgar/data/759828/000168386323005351/0001683863-23-005351-xbrl.zip" length="207108" type="application/zip" />
+      <description>N-CSRS</description>
+      <pubDate>Fri, 30 Jun 2023 17:29:37 EDT</pubDate>
+      <edgar:xbrlFiling xmlns:edgar="https://www.sec.gov/Archives/edgar">
+        <edgar:companyName>JOHN HANCOCK INVESTORS TRUST</edgar:companyName>
+        <edgar:formType>N-CSRS</edgar:formType>
+        <edgar:filingDate>06/30/2023</edgar:filingDate>
+        <edgar:cikNumber>0000759828</edgar:cikNumber>
+        <edgar:accessionNumber>0001683863-23-005351</edgar:accessionNumber>
+        <edgar:fileNumber>811-04173</edgar:fileNumber>
+        <edgar:acceptanceDatetime>20230630172937</edgar:acceptanceDatetime>
+        <edgar:period>20230430</edgar:period>
+        <edgar:fiscalYearEnd>1231</edgar:fiscalYearEnd>
+        <edgar:xbrlFiles>
+          <edgar:xbrlFile edgar:sequence="1" edgar:file="f25740d1.htm" edgar:type="N-CSRS" edgar:size="1271982" edgar:description="N-CSRS" edgar:inlineXBRL="true" edgar:url="https://www.sec.gov/Archives/edgar/data/759828/000168386323005351/f25740d1.htm" />
+          <edgar:xbrlFile edgar:sequence="2" edgar:file="f25740d2.htm" edgar:type="EX-99.(A)(2)" edgar:size="15526" edgar:description="EX-99.(A)(2)" edgar:url="https://www.sec.gov/Archives/edgar/data/759828/000168386323005351/f25740d2.htm" />
+          <edgar:xbrlFile edgar:sequence="3" edgar:file="f25740d3.htm" edgar:type="EX-99.(B)" edgar:size="3428" edgar:description="EX-99.(B)" edgar:url="https://www.sec.gov/Archives/edgar/data/759828/000168386323005351/f25740d3.htm" />
+          <edgar:xbrlFile edgar:sequence="4" edgar:file="f25740d4.htm" edgar:type="EX-99.(C)(1)" edgar:size="27212" edgar:description="EX-99.(C)(1)" edgar:url="https://www.sec.gov/Archives/edgar/data/759828/000168386323005351/f25740d4.htm" />
+          <edgar:xbrlFile edgar:sequence="6" edgar:file="jhit-20230430.xsd" edgar:type="EX-101.SCH" edgar:size="7813" edgar:description="XBRL TAXONOMY EXTENSION SCHEMA" edgar:url="https://www.sec.gov/Archives/edgar/data/759828/000168386323005351/jhit-20230430.xsd" />
+          <edgar:xbrlFile edgar:sequence="7" edgar:file="jhit-20230430_def.xml" edgar:type="EX-101.DEF" edgar:size="7816" edgar:description="XBRL TAXONOMY EXTENSION DEFINITION LINKBASE" edgar:url="https://www.sec.gov/Archives/edgar/data/759828/000168386323005351/jhit-20230430_def.xml" />
+          <edgar:xbrlFile edgar:sequence="8" edgar:file="jhit-20230430_lab.xml" edgar:type="EX-101.LAB" edgar:size="11542" edgar:description="XBRL TAXONOMY EXTENSION LABEL LINKBASE" edgar:url="https://www.sec.gov/Archives/edgar/data/759828/000168386323005351/jhit-20230430_lab.xml" />
+          <edgar:xbrlFile edgar:sequence="9" edgar:file="jhit-20230430_pre.xml" edgar:type="EX-101.PRE" edgar:size="8690" edgar:description="XBRL TAXONOMY EXTENSION PRESENTATION LINKBASE" edgar:url="https://www.sec.gov/Archives/edgar/data/759828/000168386323005351/jhit-20230430_pre.xml" />
+          <edgar:xbrlFile edgar:sequence="10" edgar:file="img0a7f0e128.gif" edgar:type="GRAPHIC" edgar:size="5985" edgar:description="GRAPHIC" edgar:url="https://www.sec.gov/Archives/edgar/data/759828/000168386323005351/img0a7f0e128.gif" />
+          <edgar:xbrlFile edgar:sequence="11" edgar:file="img216472805.jpg" edgar:type="GRAPHIC" edgar:size="4689" edgar:description="GRAPHIC" edgar:url="https://www.sec.gov/Archives/edgar/data/759828/000168386323005351/img216472805.jpg" />
+          <edgar:xbrlFile edgar:sequence="12" edgar:file="img4e46e2684.gif" edgar:type="GRAPHIC" edgar:size="6139" edgar:description="GRAPHIC" edgar:url="https://www.sec.gov/Archives/edgar/data/759828/000168386323005351/img4e46e2684.gif" />
+          <edgar:xbrlFile edgar:sequence="13" edgar:file="img6a08f25c3.gif" edgar:type="GRAPHIC" edgar:size="466" edgar:description="GRAPHIC" edgar:url="https://www.sec.gov/Archives/edgar/data/759828/000168386323005351/img6a08f25c3.gif" />
+          <edgar:xbrlFile edgar:sequence="14" edgar:file="img73c63c616.gif" edgar:type="GRAPHIC" edgar:size="4213" edgar:description="GRAPHIC" edgar:url="https://www.sec.gov/Archives/edgar/data/759828/000168386323005351/img73c63c616.gif" />
+          <edgar:xbrlFile edgar:sequence="15" edgar:file="img777b102d7.gif" edgar:type="GRAPHIC" edgar:size="5711" edgar:description="GRAPHIC" edgar:url="https://www.sec.gov/Archives/edgar/data/759828/000168386323005351/img777b102d7.gif" />
+          <edgar:xbrlFile edgar:sequence="16" edgar:file="imgbac075991.gif" edgar:type="GRAPHIC" edgar:size="81565" edgar:description="GRAPHIC" edgar:url="https://www.sec.gov/Archives/edgar/data/759828/000168386323005351/imgbac075991.gif" />
+          <edgar:xbrlFile edgar:sequence="17" edgar:file="imgbc68bed02.gif" edgar:type="GRAPHIC" edgar:size="630" edgar:description="GRAPHIC" edgar:url="https://www.sec.gov/Archives/edgar/data/759828/000168386323005351/imgbc68bed02.gif" />
+          <edgar:xbrlFile edgar:sequence="18" edgar:file="g6qu477pgi9cd0eoc83qo.jpg" edgar:type="GRAPHIC" edgar:size="20325" edgar:description="GRAPHIC" edgar:url="https://www.sec.gov/Archives/edgar/data/759828/000168386323005351/g6qu477pgi9cd0eoc83qo.jpg" />
+          <edgar:xbrlFile edgar:sequence="19" edgar:file="gzl46ogj63bg9ew8dltxt.jpg" edgar:type="GRAPHIC" edgar:size="729" edgar:description="GRAPHIC" edgar:url="https://www.sec.gov/Archives/edgar/data/759828/000168386323005351/gzl46ogj63bg9ew8dltxt.jpg" />
+        </edgar:xbrlFiles>
+      </edgar:xbrlFiling>
+    </item>
+  </channel>
+</rss>

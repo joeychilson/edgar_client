@@ -1,4 +1,4 @@
-use crate::{get_bool, get_int, get_ints, get_string};
+use crate::xml::{get_bool, get_int32, get_int64, get_ints, get_string};
 use roxmltree::Document as XMLDoc;
 use rustler::NifMap;
 
@@ -70,7 +70,7 @@ pub struct FormData {
 pub struct CoverPage {
     report_calendar_or_quarter: Option<String>,
     is_amendment: Option<bool>,
-    amendment_number: Option<i64>,
+    amendment_number: Option<i32>,
     amendment_info: Option<AmendmentInfo>,
     filing_manager: Option<FilingManager>,
     report_type: Option<String>,
@@ -129,16 +129,16 @@ pub struct SignatureBlock {
 
 #[derive(NifMap)]
 pub struct SummaryPage {
-    other_included_managers_count: Option<i64>,
-    table_entry_total: Option<i64>,
-    table_value_total: Option<i64>,
+    other_included_managers_count: Option<i32>,
+    table_entry_total: Option<i32>,
+    table_value_total: Option<i32>,
     is_confidential_omitted: Option<bool>,
     other_managers: Vec<OtherManagerWithSequence>,
 }
 
 #[derive(NifMap)]
 pub struct OtherManagerWithSequence {
-    sequence_number: Option<i64>,
+    sequence_number: Option<i32>,
     manager: Option<OtherManager>,
 }
 
@@ -164,7 +164,7 @@ pub struct TableEntry {
     shares_or_print_amount: Option<SharesOrPrintAmount>,
     put_call: Option<String>,
     investment_discretion: Option<String>,
-    other_manager: Vec<i64>,
+    other_manager: Vec<i32>,
     voting_authority: Option<VotingAuthority>,
 }
 
@@ -176,16 +176,15 @@ pub struct SharesOrPrintAmount {
 
 #[derive(NifMap)]
 pub struct VotingAuthority {
-    sole: Option<i64>,
-    shared: Option<i64>,
-    none: Option<i64>,
+    sole: Option<i32>,
+    shared: Option<i32>,
+    none: Option<i32>,
 }
 
 #[rustler::nif]
 pub fn parse_form13f_document(xml: &str) -> Result<Document, String> {
     let doc = XMLDoc::parse(xml).map_err(|e| e.to_string())?;
     let root_node = doc.root_element();
-
     let schema_version = get_string(&root_node, "schemaVersion");
     let header_data = parse_header_data(&root_node)?;
     let form_data = parse_form_data(&root_node)?;
@@ -199,7 +198,7 @@ pub fn parse_form13f_document(xml: &str) -> Result<Document, String> {
 
 fn parse_header_data(node: &roxmltree::Node) -> Result<Option<HeaderData>, String> {
     node.children()
-        .find(|n| n.has_tag_name("headerData"))
+        .find(|node| node.has_tag_name("headerData"))
         .map(|header_data_node| {
             let submission_type = get_string(&header_data_node, "submissionType");
             let filer_info = parse_filer_info(&header_data_node)?;
@@ -214,7 +213,7 @@ fn parse_header_data(node: &roxmltree::Node) -> Result<Option<HeaderData>, Strin
 
 fn parse_filer_info(node: &roxmltree::Node) -> Result<Option<FilerInfo>, String> {
     node.children()
-        .find(|n| n.has_tag_name("filerInfo"))
+        .find(|node| node.has_tag_name("filerInfo"))
         .map(|filer_info_node| {
             let live_test_flag = get_string(&filer_info_node, "liveTestFlag");
             let flags = parse_flags(&filer_info_node)?;
@@ -237,7 +236,7 @@ fn parse_filer_info(node: &roxmltree::Node) -> Result<Option<FilerInfo>, String>
 
 fn parse_flags(node: &roxmltree::Node) -> Result<Option<Flags>, String> {
     node.children()
-        .find(|n| n.has_tag_name("flags"))
+        .find(|node| node.has_tag_name("flags"))
         .map(|flags_node| {
             let confirming_copy_flag = get_bool(&flags_node, "confirmingCopyFlag");
             let return_copy_flag = get_bool(&flags_node, "returnCopyFlag");
@@ -254,7 +253,7 @@ fn parse_flags(node: &roxmltree::Node) -> Result<Option<Flags>, String> {
 
 fn parse_filer(node: &roxmltree::Node) -> Result<Option<Filer>, String> {
     node.children()
-        .find(|n| n.has_tag_name("filer"))
+        .find(|node| node.has_tag_name("filer"))
         .map(|filer_node| {
             let credentials = parse_credentials(&filer_node)?;
             let file_number = get_string(&filer_node, "fileNumber");
@@ -269,7 +268,7 @@ fn parse_filer(node: &roxmltree::Node) -> Result<Option<Filer>, String> {
 
 fn parse_credentials(node: &roxmltree::Node) -> Result<Option<Credentials>, String> {
     node.children()
-        .find(|n| n.has_tag_name("credentials"))
+        .find(|node| node.has_tag_name("credentials"))
         .map(|credentials_node| {
             let cik = get_string(&credentials_node, "cik");
             let ccc = get_string(&credentials_node, "ccc");
@@ -281,7 +280,7 @@ fn parse_credentials(node: &roxmltree::Node) -> Result<Option<Credentials>, Stri
 
 fn parse_contact(node: &roxmltree::Node) -> Result<Option<Contact>, String> {
     node.children()
-        .find(|n| n.has_tag_name("contact"))
+        .find(|node| node.has_tag_name("contact"))
         .map(|contact_node| {
             let name = get_string(&contact_node, "name");
             let phone_number = get_string(&contact_node, "phoneNumber");
@@ -298,7 +297,7 @@ fn parse_contact(node: &roxmltree::Node) -> Result<Option<Contact>, String> {
 
 fn parse_notifications(node: &roxmltree::Node) -> Result<Option<Notifications>, String> {
     node.children()
-        .find(|n| n.has_tag_name("notifications"))
+        .find(|node| node.has_tag_name("notifications"))
         .map(|notifications_node| {
             let email_address = get_string(&notifications_node, "emailAddress");
 
@@ -309,7 +308,7 @@ fn parse_notifications(node: &roxmltree::Node) -> Result<Option<Notifications>, 
 
 fn parse_form_data(node: &roxmltree::Node) -> Result<Option<FormData>, String> {
     node.children()
-        .find(|n| n.has_tag_name("formData"))
+        .find(|node| node.has_tag_name("formData"))
         .map(|form_data_node| {
             let cover_page = parse_cover_page(&form_data_node)?;
             let signature_block = parse_signature_block(&form_data_node)?;
@@ -328,12 +327,12 @@ fn parse_form_data(node: &roxmltree::Node) -> Result<Option<FormData>, String> {
 
 fn parse_cover_page(node: &roxmltree::Node) -> Result<Option<CoverPage>, String> {
     node.children()
-        .find(|n| n.has_tag_name("coverPage"))
+        .find(|node| node.has_tag_name("coverPage"))
         .map(|cover_page_node| {
             let report_calendar_or_quarter =
                 get_string(&cover_page_node, "reportCalendarOrQuarter");
             let is_amendment = get_bool(&cover_page_node, "isAmendment");
-            let amendment_number = get_int(&cover_page_node, "amendmentNumber");
+            let amendment_number = get_int32(&cover_page_node, "amendmentNumber");
             let amendment_info = parse_amendment_info(&cover_page_node)?;
             let filing_manager = parse_filing_manager(&cover_page_node)?;
             let report_type = get_string(&cover_page_node, "reportType");
@@ -361,7 +360,7 @@ fn parse_cover_page(node: &roxmltree::Node) -> Result<Option<CoverPage>, String>
 
 fn parse_amendment_info(node: &roxmltree::Node) -> Result<Option<AmendmentInfo>, String> {
     node.children()
-        .find(|n| n.has_tag_name("amendmentInfo"))
+        .find(|node| node.has_tag_name("amendmentInfo"))
         .map(|amendment_info_node| {
             let amendment_type = get_string(&amendment_info_node, "amendmentType");
             let conf_denied_expired = get_bool(&amendment_info_node, "confDeniedExpired");
@@ -383,7 +382,7 @@ fn parse_amendment_info(node: &roxmltree::Node) -> Result<Option<AmendmentInfo>,
 
 fn parse_filing_manager(node: &roxmltree::Node) -> Result<Option<FilingManager>, String> {
     node.children()
-        .find(|n| n.has_tag_name("filingManager"))
+        .find(|node| node.has_tag_name("filingManager"))
         .map(|filing_manager_node| {
             let name = get_string(&filing_manager_node, "name");
             let address = parse_filing_manager_address(&filing_manager_node)?;
@@ -395,7 +394,7 @@ fn parse_filing_manager(node: &roxmltree::Node) -> Result<Option<FilingManager>,
 
 fn parse_filing_manager_address(node: &roxmltree::Node) -> Result<Option<Address>, String> {
     node.children()
-        .find(|n| n.has_tag_name("address"))
+        .find(|node| node.has_tag_name("address"))
         .map(|filing_manager_address_node| {
             let street1 = get_string(&filing_manager_address_node, "street1");
             let street2 = get_string(&filing_manager_address_node, "street2");
@@ -416,7 +415,7 @@ fn parse_filing_manager_address(node: &roxmltree::Node) -> Result<Option<Address
 
 fn parse_other_manager_info(node: &roxmltree::Node) -> Result<Option<OtherManagerInfo>, String> {
     node.children()
-        .find(|n| n.has_tag_name("otherManagerInfo"))
+        .find(|node| node.has_tag_name("otherManagerInfo"))
         .map(|other_manager_info_node| {
             let other_manager = parse_other_manager(&other_manager_info_node)?;
             Ok(OtherManagerInfo { other_manager })
@@ -426,7 +425,7 @@ fn parse_other_manager_info(node: &roxmltree::Node) -> Result<Option<OtherManage
 
 fn parse_other_manager(node: &roxmltree::Node) -> Result<Option<OtherManager>, String> {
     node.children()
-        .find(|n| n.has_tag_name("otherManager"))
+        .find(|node| node.has_tag_name("otherManager"))
         .map(|other_manager_node| {
             let cik = get_string(&other_manager_node, "cik");
             let name = get_string(&other_manager_node, "name");
@@ -443,7 +442,7 @@ fn parse_other_manager(node: &roxmltree::Node) -> Result<Option<OtherManager>, S
 
 fn parse_signature_block(node: &roxmltree::Node) -> Result<Option<SignatureBlock>, String> {
     node.children()
-        .find(|n| n.has_tag_name("signatureBlock"))
+        .find(|node| node.has_tag_name("signatureBlock"))
         .map(|signature_block_node| {
             let name = get_string(&signature_block_node, "name");
             let title = get_string(&signature_block_node, "title");
@@ -468,12 +467,12 @@ fn parse_signature_block(node: &roxmltree::Node) -> Result<Option<SignatureBlock
 
 fn parse_summary_page(node: &roxmltree::Node) -> Result<Option<SummaryPage>, String> {
     node.children()
-        .find(|n| n.has_tag_name("summaryPage"))
+        .find(|node| node.has_tag_name("summaryPage"))
         .map(|summary_page_node| {
             let other_included_managers_count =
-                get_int(&summary_page_node, "otherIncludedManagersCount");
-            let table_entry_total = get_int(&summary_page_node, "tableEntryTotal");
-            let table_value_total = get_int(&summary_page_node, "tableValueTotal");
+                get_int32(&summary_page_node, "otherIncludedManagersCount");
+            let table_entry_total = get_int32(&summary_page_node, "tableEntryTotal");
+            let table_value_total = get_int32(&summary_page_node, "tableValueTotal");
             let is_confidential_omitted = get_bool(&summary_page_node, "isConfidentialOmitted");
             let other_managers = parse_other_managers(&summary_page_node)?;
 
@@ -495,7 +494,7 @@ fn parse_other_managers(node: &roxmltree::Node) -> Result<Vec<OtherManagerWithSe
         .flat_map(|node| node.children())
         .filter(|node| node.has_tag_name("otherManager2"))
         .filter_map(|manager_node| {
-            let sequence_number = get_int(&manager_node, "sequenceNumber");
+            let sequence_number = get_int32(&manager_node, "sequenceNumber");
             let manager = parse_other_manager(&manager_node).ok()?;
 
             Some(OtherManagerWithSequence {
@@ -542,7 +541,7 @@ pub fn parse_form13f_table(xml: &str) -> Result<Table, String> {
             let name_of_issuer = get_string(&info_node, "nameOfIssuer");
             let title_of_class = get_string(&info_node, "titleOfClass");
             let cusip = get_string(&info_node, "cusip");
-            let value = get_int(&info_node, "value");
+            let value = get_int64(&info_node, "value");
             let shares_or_print_amount = parse_shares_or_print_amount(&info_node).ok()?;
             let put_call = get_string(&info_node, "putCall");
             let investment_discretion = get_string(&info_node, "investmentDiscretion");
@@ -570,9 +569,9 @@ fn parse_shares_or_print_amount(
     node: &roxmltree::Node,
 ) -> Result<Option<SharesOrPrintAmount>, String> {
     node.children()
-        .find(|n| n.has_tag_name("shrsOrPrnAmt"))
+        .find(|node| node.has_tag_name("shrsOrPrnAmt"))
         .map(|shares_or_principal_amount_node| {
-            let amount = get_int(&shares_or_principal_amount_node, "sshPrnamt");
+            let amount = get_int64(&shares_or_principal_amount_node, "sshPrnamt");
             let shares_or_print_type =
                 get_string(&shares_or_principal_amount_node, "sshPrnamtType");
 
@@ -586,11 +585,11 @@ fn parse_shares_or_print_amount(
 
 fn parse_voting_authority(node: &roxmltree::Node) -> Result<Option<VotingAuthority>, String> {
     node.children()
-        .find(|n| n.has_tag_name("votingAuthority"))
+        .find(|node| node.has_tag_name("votingAuthority"))
         .map(|voting_authority_node| {
-            let sole = get_int(&voting_authority_node, "Sole");
-            let shared = get_int(&voting_authority_node, "Shared");
-            let none = get_int(&voting_authority_node, "None");
+            let sole = get_int32(&voting_authority_node, "Sole");
+            let shared = get_int32(&voting_authority_node, "Shared");
+            let none = get_int32(&voting_authority_node, "None");
 
             Ok(VotingAuthority { sole, shared, none })
         })

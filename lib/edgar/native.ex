@@ -31,4 +31,5 @@ defmodule EDGAR.Native do
   def parse_ownership_form(_xml), do: :erlang.nif_error(:nif_not_loaded)
   def parse_rss_feed(_xml), do: :erlang.nif_error(:nif_not_loaded)
   def parse_xbrl(_xml), do: :erlang.nif_error(:nif_not_loaded)
+  def parse_xbrl_feed(_xml), do: :erlang.nif_error(:nif_not_loaded)
 end

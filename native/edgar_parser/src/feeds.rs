@@ -1,4 +1,4 @@
-use crate::{get_int, get_string};
+use crate::xml::{get_int32, get_int64, get_string};
 use roxmltree::Document as XMLDoc;
 use rustler::NifMap;
 
@@ -25,7 +25,10 @@ pub struct Item {
 #[rustler::nif]
 pub fn parse_rss_feed(xml: &str) -> Result<RSSFeed, String> {
     let doc = XMLDoc::parse(xml).map_err(|e| e.to_string())?;
-    let root_node = doc.root_element().first_element_child().unwrap();
+    let root_node = doc
+        .root_element()
+        .first_element_child()
+        .ok_or_else(|| "Could not find the root element's first child".to_string())?;
     let title = get_string(&root_node, "title");
     let link = get_string(&root_node, "link");
     let description = get_string(&root_node, "description");
@@ -35,7 +38,7 @@ pub fn parse_rss_feed(xml: &str) -> Result<RSSFeed, String> {
 
     let items = root_node
         .children()
-        .filter(|n| n.has_tag_name("item"))
+        .filter(|node| node.has_tag_name("item"))
         .map(|item_node| {
             let title = get_string(&item_node, "title");
             let link = get_string(&item_node, "link");
@@ -122,7 +125,7 @@ pub fn parse_current_feed(xml: &str) -> Result<CurrentFeed, String> {
 
     let entries = root_node
         .children()
-        .filter(|n| n.has_tag_name("entry"))
+        .filter(|node| node.has_tag_name("entry"))
         .map(|entry_node| {
             let id = get_string(&entry_node, "id");
             let updated = get_string(&entry_node, "updated");
@@ -166,13 +169,13 @@ pub struct CompanyFeed {
 #[derive(NifMap)]
 pub struct CompanyInfo {
     addresses: Option<Addresses>,
-    assigned_sic: Option<i64>,
+    assigned_sic: Option<i32>,
     assigned_sic_desc: Option<String>,
     assigned_sic_href: Option<String>,
     cik: Option<String>,
     cik_href: Option<String>,
     conformed_name: Option<String>,
-    fiscal_year_end: Option<i64>,
+    fiscal_year_end: Option<i32>,
     office: Option<String>,
     state_location: Option<String>,
     state_location_href: Option<String>,
@@ -216,7 +219,7 @@ pub struct Content {
     filing_date: Option<String>,
     filing_href: Option<String>,
     filing_type: Option<String>,
-    film_number: Option<i64>,
+    film_number: Option<i32>,
     form_name: Option<String>,
     items_desc: Option<String>,
     size: Option<String>,
@@ -235,15 +238,15 @@ pub fn parse_company_feed(xml: &str) -> Result<CompanyFeed, String> {
 
     let company_info = root_node
         .children()
-        .find(|n| n.has_tag_name("company-info"))
+        .find(|node| node.has_tag_name("company-info"))
         .map(|company_node| {
-            let assigned_sic = get_int(&company_node, "assigned-sic");
+            let assigned_sic = get_int32(&company_node, "assigned-sic");
             let assigned_sic_desc = get_string(&company_node, "assigned-sic-desc");
             let assigned_sic_href = get_string(&company_node, "assigned-sic-href");
             let cik = get_string(&company_node, "cik");
             let cik_href = get_string(&company_node, "cik-href");
             let conformed_name = get_string(&company_node, "conformed-name");
-            let fiscal_year_end = get_int(&company_node, "fiscal-year-end");
+            let fiscal_year_end = get_int32(&company_node, "fiscal-year-end");
             let office = get_string(&company_node, "office");
             let state_location = get_string(&company_node, "state-location");
             let state_location_href = get_string(&company_node, "state-location-href");
@@ -251,7 +254,7 @@ pub fn parse_company_feed(xml: &str) -> Result<CompanyFeed, String> {
 
             let addresses = company_node
                 .children()
-                .find(|n| n.has_tag_name("addresses"))
+                .find(|node| node.has_tag_name("addresses"))
                 .and_then(|addresses_node| {
                     let addresses = addresses_node
                         .children()
@@ -300,7 +303,7 @@ pub fn parse_company_feed(xml: &str) -> Result<CompanyFeed, String> {
 
     let entries = root_node
         .children()
-        .filter(|n| n.has_tag_name("entry"))
+        .filter(|node| node.has_tag_name("entry"))
         .map(|entry_node| {
             let id = get_string(&entry_node, "id");
             let updated = get_string(&entry_node, "updated");
@@ -311,7 +314,7 @@ pub fn parse_company_feed(xml: &str) -> Result<CompanyFeed, String> {
 
             let content = entry_node
                 .children()
-                .find(|n| n.has_tag_name("content"))
+                .find(|node| node.has_tag_name("content"))
                 .map(|content_node| {
                     let content_type = content_node.attribute("type").map(|s| s.to_string());
                     let accession_number = get_string(&content_node, "accession-number");
@@ -321,7 +324,7 @@ pub fn parse_company_feed(xml: &str) -> Result<CompanyFeed, String> {
                     let filing_date = get_string(&content_node, "filing-date");
                     let filing_href = get_string(&content_node, "filing-href");
                     let filing_type = get_string(&content_node, "filing-type");
-                    let film_number = get_int(&content_node, "film-number");
+                    let film_number = get_int32(&content_node, "film-number");
                     let form_name = get_string(&content_node, "form-name");
                     let items_desc = get_string(&content_node, "items-desc");
                     let size = get_string(&content_node, "size");
@@ -370,7 +373,7 @@ pub fn parse_company_feed(xml: &str) -> Result<CompanyFeed, String> {
 
 fn parse_author(node: &roxmltree::Node) -> Result<Option<Author>, String> {
     node.children()
-        .find(|n| n.has_tag_name("author"))
+        .find(|node| node.has_tag_name("author"))
         .map(|author_node| {
             let name = get_string(&author_node, "name");
             let email = get_string(&author_node, "email");
@@ -382,7 +385,7 @@ fn parse_author(node: &roxmltree::Node) -> Result<Option<Author>, String> {
 
 fn parse_link(node: &roxmltree::Node) -> Result<Option<Link>, String> {
     node.children()
-        .find(|n| n.has_tag_name("link"))
+        .find(|node| node.has_tag_name("link"))
         .map(|link_node| {
             let href = link_node.attribute("href").map(|s| s.to_string());
             let rel = link_node.attribute("rel").map(|s| s.to_string());
@@ -400,7 +403,7 @@ fn parse_link(node: &roxmltree::Node) -> Result<Option<Link>, String> {
 fn parse_links(node: &roxmltree::Node) -> Result<Vec<Link>, String> {
     let links = node
         .children()
-        .filter(|n| n.has_tag_name("link"))
+        .filter(|node| node.has_tag_name("link"))
         .filter_map(|link_node| {
             let href = link_node.attribute("href").map(|s| s.to_string());
             let rel = link_node.attribute("rel").map(|s| s.to_string());
@@ -418,7 +421,7 @@ fn parse_links(node: &roxmltree::Node) -> Result<Vec<Link>, String> {
 
 fn parse_category(node: &roxmltree::Node) -> Result<Option<Category>, String> {
     node.children()
-        .find(|n| n.has_tag_name("category"))
+        .find(|node| node.has_tag_name("category"))
         .map(|category_node| {
             let label = category_node.attribute("label").map(|s| s.to_string());
             let scheme = category_node.attribute("scheme").map(|s| s.to_string());
@@ -435,7 +438,7 @@ fn parse_category(node: &roxmltree::Node) -> Result<Option<Category>, String> {
 
 fn parse_summary(node: &roxmltree::Node) -> Result<Option<Summary>, String> {
     node.children()
-        .find(|n| n.has_tag_name("summary"))
+        .find(|node| node.has_tag_name("summary"))
         .map(|summary_node| {
             let summary_type = summary_node.attribute("type").map(|s| s.to_string());
             let summary = summary_node.text().map(|s| s.to_string());
@@ -446,4 +449,198 @@ fn parse_summary(node: &roxmltree::Node) -> Result<Option<Summary>, String> {
             })
         })
         .transpose()
+}
+
+#[derive(NifMap)]
+pub struct XBRLFeed {
+    title: Option<String>,
+    link: Option<String>,
+    description: Option<String>,
+    language: Option<String>,
+    items: Vec<XBRLItem>,
+    pub_date: Option<String>,
+    last_build_date: Option<String>,
+}
+
+#[derive(NifMap)]
+pub struct XBRLItem {
+    title: Option<String>,
+    link: Option<String>,
+    guid: Option<String>,
+    enclosure: Option<Enclosure>,
+    description: Option<String>,
+    pub_date: Option<String>,
+    filing: Option<Filing>,
+}
+
+#[derive(NifMap)]
+pub struct Enclosure {
+    url: Option<String>,
+    length: Option<i32>,
+    mime_type: Option<String>,
+}
+
+#[derive(NifMap)]
+pub struct Filing {
+    cik: Option<String>,
+    company_name: Option<String>,
+    filing_date: Option<String>,
+    acceptance_datetime: Option<i64>,
+    period: Option<i32>,
+    accession_number: Option<String>,
+    file_number: Option<String>,
+    form_type: Option<String>,
+    assistant_director: Option<String>,
+    assigned_sic: Option<i32>,
+    fiscal_year_end: Option<i32>,
+    files: Vec<File>,
+}
+
+#[derive(NifMap)]
+pub struct File {
+    sequence: Option<i32>,
+    file: Option<String>,
+    file_type: Option<String>,
+    size: Option<i32>,
+    description: Option<String>,
+    url: Option<String>,
+}
+
+#[rustler::nif]
+pub fn parse_xbrl_feed(xml: &str) -> Result<XBRLFeed, String> {
+    let doc = XMLDoc::parse(xml).map_err(|e| e.to_string())?;
+    let root_node = doc
+        .root_element()
+        .first_element_child()
+        .ok_or_else(|| "Could not find the root element's first child".to_string())?;
+
+    let title = get_string(&root_node, "title");
+    let link = get_string(&root_node, "link");
+    let description = get_string(&root_node, "description");
+    let language = get_string(&root_node, "language");
+    let pub_date = get_string(&root_node, "pubDate");
+    let last_build_date = get_string(&root_node, "lastBuildDate");
+
+    let items = root_node
+        .children()
+        .filter(|node| node.has_tag_name("item"))
+        .map(|item_node| {
+            let title = get_string(&item_node, "title");
+            let link = get_string(&item_node, "link");
+            let guid = get_string(&item_node, "guid");
+            let enclosure = parse_enclosure(&item_node)?;
+            let description = get_string(&item_node, "description");
+            let pub_date = get_string(&item_node, "pubDate");
+            let filing = parse_filing(&item_node)?;
+
+            Ok::<XBRLItem, String>(XBRLItem {
+                title,
+                link,
+                guid,
+                enclosure,
+                description,
+                pub_date,
+                filing,
+            })
+        })
+        .collect::<Result<Vec<XBRLItem>, String>>()?;
+
+    Ok(XBRLFeed {
+        title,
+        link,
+        description,
+        language,
+        items,
+        pub_date,
+        last_build_date,
+    })
+}
+
+fn parse_enclosure(node: &roxmltree::Node) -> Result<Option<Enclosure>, String> {
+    node.children()
+        .find(|node| node.has_tag_name("enclosure"))
+        .map(|enclosure_node| {
+            let url = enclosure_node.attribute("url").map(|s| s.to_string());
+            let length = enclosure_node
+                .attribute("length")
+                .and_then(|s| s.parse::<i32>().ok());
+            let mime_type = enclosure_node.attribute("type").map(|s| s.to_string());
+
+            Ok(Enclosure {
+                url,
+                length,
+                mime_type,
+            })
+        })
+        .transpose()
+}
+
+fn parse_filing(node: &roxmltree::Node) -> Result<Option<Filing>, String> {
+    node.children()
+        .find(|node| node.has_tag_name("xbrlFiling"))
+        .map(|filing_node| {
+            let cik = get_string(&filing_node, "cikNumber");
+            let company_name = get_string(&filing_node, "companyName");
+            let filing_date = get_string(&filing_node, "filingDate");
+            let acceptance_datetime = get_int64(&filing_node, "acceptanceDatetime");
+            let period = get_int32(&filing_node, "period");
+            let accession_number = get_string(&filing_node, "accessionNumber");
+            let file_number = get_string(&filing_node, "fileNumber");
+            let form_type = get_string(&filing_node, "formType");
+            let assistant_director = get_string(&filing_node, "assistantDirector");
+            let assigned_sic = get_int32(&filing_node, "assignedSic");
+            let fiscal_year_end = get_int32(&filing_node, "fiscalYearEnd");
+            let files = parse_files(&filing_node)?;
+
+            Ok::<Filing, String>(Filing {
+                cik,
+                company_name,
+                filing_date,
+                acceptance_datetime,
+                period,
+                accession_number,
+                file_number,
+                form_type,
+                assistant_director,
+                assigned_sic,
+                fiscal_year_end,
+                files,
+            })
+        })
+        .transpose()
+}
+
+fn parse_files(node: &roxmltree::Node) -> Result<Vec<File>, String> {
+    let ns = node.tag_name().namespace().unwrap_or_default();
+
+    let files = node
+        .children()
+        .filter(|node| node.has_tag_name("xbrlFiles"))
+        .flat_map(|node| node.children())
+        .filter(|node| node.has_tag_name("xbrlFile"))
+        .filter_map(|file_node| {
+            let sequence = file_node
+                .attribute((ns, "sequence"))
+                .and_then(|s| s.parse::<i32>().ok());
+            let file = file_node.attribute((ns, "file")).map(|s| s.to_string());
+            let file_type = file_node.attribute((ns, "type")).map(|s| s.to_string());
+            let size = file_node
+                .attribute((ns, "size"))
+                .and_then(|s| s.parse::<i32>().ok());
+            let description = file_node
+                .attribute((ns, "description"))
+                .map(|s| s.to_string());
+            let url = file_node.attribute((ns, "url")).map(|s| s.to_string());
+
+            Some(File {
+                sequence,
+                file,
+                file_type,
+                size,
+                description,
+                url,
+            })
+        })
+        .collect();
+    Ok(files)
 }

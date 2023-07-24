@@ -97,4 +97,10 @@ defmodule EDGARTest.Parser do
     {:ok, feed} = EDGAR.Native.parse_rss_feed(file)
     assert feed.title == "Press Releases"
   end
+
+  test "parsing xbrl_feed" do
+    {:ok, file} = File.read("test/test_data/xbrl_feed.xml")
+    {:ok, feed} = EDGAR.Native.parse_xbrl_feed(file)
+    assert feed.title == "All XBRL Data Submitted to the SEC for 2023-06"
+  end
 end
