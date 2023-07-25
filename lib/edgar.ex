@@ -18,6 +18,138 @@ defmodule EDGAR do
   end
 
   @doc """
+  Fetches a list of company tickers
+  """
+  @spec company_tickers :: success_type(list()) | error_type()
+  def company_tickers() do
+    case get_json("#{@edgar_files_url}/company_tickers.json") do
+      {:ok, result} ->
+        {:ok, Map.values(result)}
+
+      error ->
+        error
+    end
+  end
+
+  @doc """
+  Fetches a list of company tickers with exchange
+  """
+  @spec company_tickers_with_exchange :: success_type(list()) | error_type()
+  def company_tickers_with_exchange do
+    case get_json("#{@edgar_files_url}/company_tickers_exchange.json") do
+      {:ok, %{"data" => data, "fields" => fields}} ->
+        result = for row <- data, into: [], do: Enum.zip(fields, row) |> Enum.into(%{})
+        {:ok, result}
+
+      error ->
+        error
+    end
+  end
+
+  @doc """
+  Fetches a list of mutual fund tickers
+  """
+  @spec mutual_fund_tickers :: success_type(list()) | error_type()
+  def mutual_fund_tickers do
+    case get_json("#{@edgar_files_url}/company_tickers_mf.json") do
+      {:ok, %{"data" => data, "fields" => fields}} ->
+        result = for row <- data, into: [], do: Enum.zip(fields, row) |> Enum.into(%{})
+        {:ok, result}
+
+      error ->
+        error
+    end
+  end
+
+  @doc """
+  Fetches a CIK for a given company ticker
+
+  ## Required
+
+  * `ticker` - The ticker of the company
+  """
+  @spec company_cik(ticker :: String.t()) :: success_type(String.t()) | error_type()
+  def company_cik(ticker) do
+    upcase_ticker = String.upcase(ticker)
+
+    case company_tickers() do
+      {:ok, tickers} ->
+        ticker_data = Enum.find(tickers, fn t -> t["ticker"] == upcase_ticker end)
+
+        case ticker_data do
+          nil ->
+            {:error, "ticker not found"}
+
+          _ ->
+            {:ok, Integer.to_string(ticker_data["cik_str"])}
+        end
+
+      {:error, _} = error ->
+        error
+    end
+  end
+
+  @doc """
+  Fetches a CIK for a given mutual fund ticker
+
+  ## Required
+
+  * `ticker` - The ticker of the mutual fund
+  """
+  @spec mutual_fund_cik(ticker :: String.t()) :: success_type(String.t()) | error_type()
+  def mutual_fund_cik(ticker) do
+    upcase_ticker = String.upcase(ticker)
+
+    case mutual_fund_tickers() do
+      {:ok, tickers} ->
+        ticker_data = Enum.find(tickers, fn t -> t["symbol"] == upcase_ticker end)
+
+        case ticker_data do
+          nil ->
+            {:error, "ticker not found"}
+
+          _ ->
+            {:ok, Integer.to_string(ticker_data["cik"])}
+        end
+
+      {:error, _} = error ->
+        error
+    end
+  end
+
+  @doc """
+  Fetches the entity directory
+
+  ## Required
+
+  * `cik` - The CIK of the entity
+  """
+  @spec entity_directory(cik :: String.t()) :: success_type(map()) | error_type()
+  def entity_directory(cik) do
+    padded_cik = String.pad_leading(cik, 10, "0")
+
+    "#{@edgar_archives_url}/data/#{padded_cik}/index.json"
+    |> get_json()
+  end
+
+  @doc """
+  Fetches the filing directory
+
+  ## Required
+
+  * `cik` - The CIK of the entity
+  * `accession_number` - The accession number of the filing
+  """
+  @spec filing_directory(cik :: String.t(), accession_number :: String.t()) ::
+          success_type(map()) | error_type()
+  def filing_directory(cik, accession_number) do
+    formatted_acc_no = String.replace(accession_number, "-", "")
+
+    "#{@edgar_archives_url}/data/#{cik}/#{formatted_acc_no}/index.json"
+    |> get_json()
+  end
+
+  @doc """
   Fetches the daily index
 
   ## Optional
@@ -88,13 +220,7 @@ defmodule EDGAR do
   """
   @spec company_index_from_url(url :: String.t()) :: success_type(list(map())) | error_type()
   def company_index_from_url(url) do
-    case get(url) do
-      {:ok, file} ->
-        company_index_from_string(file)
-
-      {:error, error} ->
-        {:error, error}
-    end
+    with {:ok, file} <- get(url), do: company_index_from_string(file)
   end
 
   @doc """
@@ -107,13 +233,7 @@ defmodule EDGAR do
   @spec company_index_from_file(file_path :: String.t()) ::
           success_type(list(map())) | error_type()
   def company_index_from_file(file_path) do
-    case File.read(file_path) do
-      {:ok, file_content} ->
-        company_index_from_string(file_content)
-
-      {:error, error} ->
-        {:error, error}
-    end
+    with {:ok, file_content} <- File.read(file_path), do: company_index_from_string(file_content)
   end
 
   @doc """
@@ -161,13 +281,7 @@ defmodule EDGAR do
   """
   @spec crawler_index_from_url(url :: String.t()) :: success_type(list(map())) | error_type()
   def crawler_index_from_url(url) do
-    case get(url) do
-      {:ok, file} ->
-        crawler_index_from_string(file)
-
-      {:error, error} ->
-        {:error, error}
-    end
+    with {:ok, file} <- get(url), do: crawler_index_from_string(file)
   end
 
   @doc """
@@ -180,13 +294,7 @@ defmodule EDGAR do
   @spec crawler_index_from_file(file_path :: String.t()) ::
           success_type(list(map())) | error_type()
   def crawler_index_from_file(file_path) do
-    case File.read(file_path) do
-      {:ok, file_content} ->
-        crawler_index_from_string(file_content)
-
-      {:error, error} ->
-        {:error, error}
-    end
+    with {:ok, file_content} <- File.read(file_path), do: crawler_index_from_string(file_content)
   end
 
   @doc """
@@ -232,13 +340,7 @@ defmodule EDGAR do
   """
   @spec form_index_from_url(url :: String.t()) :: success_type(list(map())) | error_type()
   def form_index_from_url(url) do
-    case get(url) do
-      {:ok, file} ->
-        form_index_from_string(file)
-
-      {:error, error} ->
-        {:error, error}
-    end
+    with {:ok, file} <- get(url), do: form_index_from_string(file)
   end
 
   @doc """
@@ -251,13 +353,7 @@ defmodule EDGAR do
   @spec form_index_from_file(file_path :: String.t()) ::
           success_type(list(map())) | error_type()
   def form_index_from_file(file_path) do
-    case File.read(file_path) do
-      {:ok, file_content} ->
-        form_index_from_string(file_content)
-
-      {:error, error} ->
-        {:error, error}
-    end
+    with {:ok, file_content} <- File.read(file_path), do: form_index_from_string(file_content)
   end
 
   @doc """
@@ -303,13 +399,7 @@ defmodule EDGAR do
   """
   @spec xbrl_index_from_url(url :: String.t()) :: success_type(list(map())) | error_type()
   def xbrl_index_from_url(url) do
-    case get(url) do
-      {:ok, file} ->
-        xbrl_index_from_string(file)
-
-      {:error, error} ->
-        {:error, error}
-    end
+    with {:ok, file} <- get(url), do: xbrl_index_from_string(file)
   end
 
   @doc """
@@ -322,13 +412,7 @@ defmodule EDGAR do
   @spec xbrl_index_from_file(file_path :: String.t()) ::
           success_type(list(map())) | error_type()
   def xbrl_index_from_file(file_path) do
-    case File.read(file_path) do
-      {:ok, file_content} ->
-        xbrl_index_from_string(file_content)
-
-      {:error, error} ->
-        {:error, error}
-    end
+    with {:ok, file_content} <- File.read(file_path), do: xbrl_index_from_string(file_content)
   end
 
   @doc """
@@ -374,13 +458,7 @@ defmodule EDGAR do
   """
   @spec master_index_from_url(url :: String.t()) :: success_type(list(map())) | error_type()
   def master_index_from_url(url) do
-    case get(url) do
-      {:ok, file} ->
-        master_index_from_string(file)
-
-      {:error, error} ->
-        {:error, error}
-    end
+    with {:ok, file} <- get(url), do: master_index_from_string(file)
   end
 
   @doc """
@@ -393,13 +471,7 @@ defmodule EDGAR do
   @spec master_index_from_file(file_path :: String.t()) ::
           success_type(list(map())) | error_type()
   def master_index_from_file(file_path) do
-    case File.read(file_path) do
-      {:ok, file_content} ->
-        master_index_from_string(file_content)
-
-      {:error, error} ->
-        {:error, error}
-    end
+    with {:ok, file_content} <- File.read(file_path), do: master_index_from_string(file_content)
   end
 
   @doc """
@@ -437,82 +509,6 @@ defmodule EDGAR do
   end
 
   @doc """
-  Fetches the entity directory
-
-  ## Required
-
-  * `cik` - The CIK of the entity
-  """
-  @spec entity_directory(cik :: String.t()) :: success_type(map()) | error_type()
-  def entity_directory(cik) do
-    padded_cik = String.pad_leading(cik, 10, "0")
-
-    "#{@edgar_archives_url}/data/#{padded_cik}/index.json"
-    |> get_json()
-  end
-
-  @doc """
-  Fetches the filing directory
-
-  ## Required
-
-  * `cik` - The CIK of the entity
-  * `accession_number` - The accession number of the filing
-  """
-  @spec filing_directory(cik :: String.t(), accession_number :: String.t()) ::
-          success_type(map()) | error_type()
-  def filing_directory(cik, accession_number) do
-    formatted_acc_no = String.replace(accession_number, "-", "")
-
-    "#{@edgar_archives_url}/data/#{cik}/#{formatted_acc_no}/index.json"
-    |> get_json()
-  end
-
-  @doc """
-  Fetches a list of company tickers
-  """
-  @spec company_tickers :: success_type(list()) | error_type()
-  def company_tickers() do
-    resp = get_json("#{@edgar_files_url}/company_tickers.json")
-
-    case resp do
-      {:ok, result} ->
-        {:ok, Map.values(result)}
-
-      _ ->
-        resp
-    end
-  end
-
-  @doc """
-  Fetches a CIK for a given ticker
-
-  ## Required
-
-  * `ticker` - The ticker of the company
-  """
-  @spec cik_for_ticker(ticker :: String.t()) :: success_type(String.t()) | error_type()
-  def cik_for_ticker(ticker) do
-    upcase_ticker = String.upcase(ticker)
-
-    case company_tickers() do
-      {:ok, tickers} ->
-        ticker_data = Enum.find(tickers, fn t -> t["ticker"] == upcase_ticker end)
-
-        case ticker_data do
-          nil ->
-            {:error, "ticker not found"}
-
-          _ ->
-            {:ok, Integer.to_string(ticker_data["cik_str"])}
-        end
-
-      {:error, _} = error ->
-        error
-    end
-  end
-
-  @doc """
   Fetches submissions for a given CIK
 
   ## Required
@@ -521,9 +517,9 @@ defmodule EDGAR do
   """
   @spec submissions(cik :: String.t()) :: success_type(map()) | error_type()
   def submissions(cik) do
-    cik = String.pad_leading(cik, 10, "0")
+    padded_cik = String.pad_leading(cik, 10, "0")
 
-    "#{@edgar_data_url}/submissions/CIK#{cik}.json"
+    "#{@edgar_data_url}/submissions/CIK#{padded_cik}.json"
     |> get_json()
   end
 
@@ -656,9 +652,7 @@ defmodule EDGAR do
     ]
 
     Enum.zip(for name <- field_names, do: Map.get(filings, name))
-    |> Enum.map(fn tuple ->
-      Map.new(Enum.zip(field_names, Tuple.to_list(tuple)))
-    end)
+    |> Enum.map(fn tuple -> Map.new(Enum.zip(field_names, Tuple.to_list(tuple))) end)
   end
 
   @doc """
@@ -839,10 +833,7 @@ defmodule EDGAR do
   """
   @spec ownership_form_from_file(file_path :: String.t()) :: success_type(map()) | error_type()
   def ownership_form_from_file(file_path) do
-    with {:ok, body} <- File.read(file_path),
-         result <- ownership_form_from_string(body) do
-      result
-    end
+    with {:ok, body} <- File.read(file_path), do: ownership_form_from_string(body)
   end
 
   @doc """
@@ -857,10 +848,7 @@ defmodule EDGAR do
   """
   @spec ownership_form_from_url(url :: String.t()) :: success_type(map()) | error_type()
   def ownership_form_from_url(url) do
-    with {:ok, body} <- get(url),
-         result <- ownership_form_from_string(body) do
-      result
-    end
+    with {:ok, body} <- get(url), do: ownership_form_from_string(body)
   end
 
   @doc """
@@ -918,7 +906,7 @@ defmodule EDGAR do
           {:error, "No primary_doc or table file found"}
         end
 
-      {:error, _} = error ->
+      error ->
         error
     end
   end
@@ -932,10 +920,7 @@ defmodule EDGAR do
   """
   @spec form13f_document_from_file(file_path :: String.t()) :: success_type(map()) | error_type()
   def form13f_document_from_file(file_path) do
-    with {:ok, body} <- File.read(file_path),
-         result <- form13f_document_from_string(body) do
-      result
-    end
+    with {:ok, body} <- File.read(file_path), do: form13f_document_from_string(body)
   end
 
   @doc """
@@ -947,10 +932,7 @@ defmodule EDGAR do
   """
   @spec form13f_document_from_url(url :: String.t()) :: success_type(map()) | error_type()
   def form13f_document_from_url(url) do
-    with {:ok, body} <- get(url),
-         result <- form13f_document_from_string(body) do
-      result
-    end
+    with {:ok, body} <- get(url), do: form13f_document_from_string(body)
   end
 
   @doc """
@@ -972,10 +954,7 @@ defmodule EDGAR do
   """
   @spec form13f_table_from_file(file_path :: String.t()) :: success_type(map()) | error_type()
   def form13f_table_from_file(file_path) do
-    with {:ok, body} <- File.read(file_path),
-         result <- form13f_table_from_string(body) do
-      result
-    end
+    with {:ok, body} <- File.read(file_path), do: form13f_table_from_string(body)
   end
 
   @doc """
@@ -987,10 +966,7 @@ defmodule EDGAR do
   """
   @spec form13f_table_from_url(url :: String.t()) :: success_type(map()) | error_type()
   def form13f_table_from_url(url) do
-    with {:ok, body} <- get(url),
-         result <- form13f_table_from_string(body) do
-      result
-    end
+    with {:ok, body} <- get(url), do: form13f_table_from_string(body)
   end
 
   @doc """
@@ -1012,10 +988,7 @@ defmodule EDGAR do
   """
   @spec xbrl_from_file(file_path :: String.t()) :: success_type(map()) | error_type()
   def xbrl_from_file(file_path) do
-    with {:ok, file_content} <- File.read(file_path),
-         result <- xbrl_from_string(file_content) do
-      result
-    end
+    with {:ok, file_content} <- File.read(file_path), do: xbrl_from_string(file_content)
   end
 
   @doc """
@@ -1027,10 +1000,7 @@ defmodule EDGAR do
   """
   @spec xbrl_from_url(url :: String.t()) :: success_type(map()) | error_type()
   def xbrl_from_url(url) do
-    with {:ok, body} <- get(url),
-         result <- xbrl_from_string(body) do
-      result
-    end
+    with {:ok, body} <- get(url), do: xbrl_from_string(body)
   end
 
   @doc """
@@ -1060,11 +1030,7 @@ defmodule EDGAR do
   def current_feed(opts \\ %{}) do
     opts = Map.merge(%{output: "atom"}, opts)
     url = "https://www.sec.gov/cgi-bin/browse-edgar?action=getcurrent&#{URI.encode_query(opts)}"
-
-    with {:ok, body} <- get(url),
-         result <- current_feed_from_string(body) do
-      result
-    end
+    with {:ok, body} <- get(url), do: current_feed_from_string(body)
   end
 
   @doc """
@@ -1094,11 +1060,7 @@ defmodule EDGAR do
   def company_feed(cik, opts \\ %{}) do
     opts = Map.merge(%{output: "atom", CIK: cik}, opts)
     url = "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&#{URI.encode_query(opts)}"
-
-    with {:ok, body} <- get(url),
-         result <- company_feed_from_string(body) do
-      result
-    end
+    with {:ok, body} <- get(url), do: company_feed_from_string(body)
   end
 
   @doc """
@@ -1117,11 +1079,7 @@ defmodule EDGAR do
   @spec press_release_feed :: success_type(map()) | error_type()
   def press_release_feed do
     url = "https://www.sec.gov/news/pressreleases.rss"
-
-    with {:ok, body} <- get(url),
-         result <- rss_feed_from_string(body) do
-      result
-    end
+    with {:ok, body} <- get(url), do: rss_feed_from_string(body)
   end
 
   @doc """
@@ -1130,11 +1088,7 @@ defmodule EDGAR do
   @spec speeches_and_statements_feed :: success_type(map()) | error_type()
   def speeches_and_statements_feed do
     url = "https://www.sec.gov/news/speeches-statements.rss"
-
-    with {:ok, body} <- get(url),
-         result <- rss_feed_from_string(body) do
-      result
-    end
+    with {:ok, body} <- get(url), do: rss_feed_from_string(body)
   end
 
   @doc """
@@ -1143,11 +1097,7 @@ defmodule EDGAR do
   @spec speeches_feed :: success_type(map()) | error_type()
   def speeches_feed do
     url = "https://www.sec.gov/news/speeches.rss"
-
-    with {:ok, body} <- get(url),
-         result <- rss_feed_from_string(body) do
-      result
-    end
+    with {:ok, body} <- get(url), do: rss_feed_from_string(body)
   end
 
   @doc """
@@ -1156,11 +1106,7 @@ defmodule EDGAR do
   @spec testimony_feed :: success_type(map()) | error_type()
   def testimony_feed do
     url = "https://www.sec.gov/news/testimony.rss"
-
-    with {:ok, body} <- get(url),
-         result <- rss_feed_from_string(body) do
-      result
-    end
+    with {:ok, body} <- get(url), do: rss_feed_from_string(body)
   end
 
   @doc """
@@ -1169,11 +1115,7 @@ defmodule EDGAR do
   @spec statements_feed :: success_type(map()) | error_type()
   def statements_feed do
     url = "https://www.sec.gov/news/statements.rss"
-
-    with {:ok, body} <- get(url),
-         result <- rss_feed_from_string(body) do
-      result
-    end
+    with {:ok, body} <- get(url), do: rss_feed_from_string(body)
   end
 
   @doc """
@@ -1182,11 +1124,7 @@ defmodule EDGAR do
   @spec litigation_feed :: success_type(map()) | error_type()
   def litigation_feed do
     url = "https://www.sec.gov/litigation/litreleases.rss"
-
-    with {:ok, body} <- get(url),
-         result <- rss_feed_from_string(body) do
-      result
-    end
+    with {:ok, body} <- get(url), do: rss_feed_from_string(body)
   end
 
   @doc """
@@ -1195,11 +1133,7 @@ defmodule EDGAR do
   @spec administrative_proceedings_feed :: success_type(map()) | error_type()
   def administrative_proceedings_feed do
     url = "https://www.sec.gov/rss/litigation/admin.xml"
-
-    with {:ok, body} <- get(url),
-         result <- rss_feed_from_string(body) do
-      result
-    end
+    with {:ok, body} <- get(url), do: rss_feed_from_string(body)
   end
 
   @doc """
@@ -1208,11 +1142,7 @@ defmodule EDGAR do
   @spec trading_suspensions_feed :: success_type(map()) | error_type()
   def trading_suspensions_feed do
     url = "https://www.sec.gov/rss/litigation/suspensions.xml"
-
-    with {:ok, body} <- get(url),
-         result <- rss_feed_from_string(body) do
-      result
-    end
+    with {:ok, body} <- get(url), do: rss_feed_from_string(body)
   end
 
   @doc """
@@ -1221,11 +1151,7 @@ defmodule EDGAR do
   @spec division_of_corporation_finance_feed :: success_type(map()) | error_type()
   def division_of_corporation_finance_feed do
     url = "https://www.sec.gov/rss/divisions/corpfin/cfnew.xml"
-
-    with {:ok, body} <- get(url),
-         result <- rss_feed_from_string(body) do
-      result
-    end
+    with {:ok, body} <- get(url), do: rss_feed_from_string(body)
   end
 
   @doc """
@@ -1234,11 +1160,7 @@ defmodule EDGAR do
   @spec division_of_investment_management_feed :: success_type(map()) | error_type()
   def division_of_investment_management_feed do
     url = "https://www.sec.gov/rss/divisions/investment/imnews.xml"
-
-    with {:ok, body} <- get(url),
-         result <- rss_feed_from_string(body) do
-      result
-    end
+    with {:ok, body} <- get(url), do: rss_feed_from_string(body)
   end
 
   @doc """
@@ -1247,11 +1169,7 @@ defmodule EDGAR do
   @spec investor_alerts_feed :: success_type(map()) | error_type()
   def investor_alerts_feed do
     url = "https://www.sec.gov/rss/investor/alerts"
-
-    with {:ok, body} <- get(url),
-         result <- rss_feed_from_string(body) do
-      result
-    end
+    with {:ok, body} <- get(url), do: rss_feed_from_string(body)
   end
 
   @doc """
@@ -1270,11 +1188,7 @@ defmodule EDGAR do
   @spec filings_feed :: success_type(map()) | error_type()
   def filings_feed do
     url = "https://www.sec.gov/Archives/edgar/usgaap.rss.xml"
-
-    with {:ok, body} <- get(url),
-         result <- filing_feed_from_string(body) do
-      result
-    end
+    with {:ok, body} <- get(url), do: filing_feed_from_string(body)
   end
 
   @doc """
@@ -1283,11 +1197,7 @@ defmodule EDGAR do
   @spec mutual_funds_feed :: success_type(map()) | error_type()
   def mutual_funds_feed do
     url = "https://www.sec.gov/Archives/edgar/xbrl-rr.rss.xml"
-
-    with {:ok, body} <- get(url),
-         result <- filing_feed_from_string(body) do
-      result
-    end
+    with {:ok, body} <- get(url), do: filing_feed_from_string(body)
   end
 
   @doc """
@@ -1296,11 +1206,7 @@ defmodule EDGAR do
   @spec xbrl_feed :: success_type(map()) | error_type()
   def xbrl_feed do
     url = "https://www.sec.gov/Archives/edgar/xbrlrss.all.xml"
-
-    with {:ok, body} <- get(url),
-         result <- filing_feed_from_string(body) do
-      result
-    end
+    with {:ok, body} <- get(url), do: filing_feed_from_string(body)
   end
 
   @doc """
@@ -1309,11 +1215,7 @@ defmodule EDGAR do
   @spec inline_xbrl_feed :: success_type(map()) | error_type()
   def inline_xbrl_feed do
     url = "https://www.sec.gov/Archives/edgar/xbrl-inline.rss.xml"
-
-    with {:ok, body} <- get(url),
-         result <- filing_feed_from_string(body) do
-      result
-    end
+    with {:ok, body} <- get(url), do: filing_feed_from_string(body)
   end
 
   @doc """
@@ -1341,11 +1243,7 @@ defmodule EDGAR do
           |> String.pad_leading(2, "0")
 
         url = "https://www.sec.gov/Archives/edgar/monthly/xbrlrss-#{year}-#{formatted_month}.xml"
-
-        with {:ok, body} <- get(url),
-             result <- filing_feed_from_string(body) do
-          result
-        end
+        with {:ok, body} <- get(url), do: filing_feed_from_string(body)
     end
   end
 
@@ -1361,13 +1259,7 @@ defmodule EDGAR do
 
   @doc false
   defp get_json(url) do
-    case get(url) do
-      {:ok, body} ->
-        {:ok, Jason.decode!(body)}
-
-      {:error, _} = error ->
-        error
-    end
+    with {:ok, body} <- get(url), do: Jason.decode(body)
   end
 
   @doc false

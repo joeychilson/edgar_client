@@ -33,13 +33,13 @@ defmodule EDGARTest do
   end
 
   test "cik for ticker found" do
-    cik = EDGAR.cik_for_ticker("AAPL")
+    cik = EDGAR.company_cik("AAPL")
     assert {:ok, cik} = cik
     assert cik == "320193"
   end
 
   test "cik for ticker not found" do
-    cik = EDGAR.cik_for_ticker("1")
+    cik = EDGAR.company_cik("1")
     assert {:error, "ticker not found"} = cik
   end
 
