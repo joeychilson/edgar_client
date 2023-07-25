@@ -445,9 +445,9 @@ defmodule EDGAR do
   """
   @spec entity_directory(cik :: String.t()) :: success_type(map()) | error_type()
   def entity_directory(cik) do
-    cik = String.pad_leading(cik, 10, "0")
+    padded_cik = String.pad_leading(cik, 10, "0")
 
-    "#{@edgar_archives_url}/data/#{cik}/index.json"
+    "#{@edgar_archives_url}/data/#{padded_cik}/index.json"
     |> get_json()
   end
 
@@ -462,9 +462,9 @@ defmodule EDGAR do
   @spec filing_directory(cik :: String.t(), accession_number :: String.t()) ::
           success_type(map()) | error_type()
   def filing_directory(cik, accession_number) do
-    accession_number = String.replace(accession_number, "-", "")
+    formatted_acc_no = String.replace(accession_number, "-", "")
 
-    "#{@edgar_archives_url}/data/#{cik}/#{accession_number}/index.json"
+    "#{@edgar_archives_url}/data/#{cik}/#{formatted_acc_no}/index.json"
     |> get_json()
   end
 
@@ -493,11 +493,11 @@ defmodule EDGAR do
   """
   @spec cik_for_ticker(ticker :: String.t()) :: success_type(String.t()) | error_type()
   def cik_for_ticker(ticker) do
-    ticker = String.upcase(ticker)
+    upcase_ticker = String.upcase(ticker)
 
     case company_tickers() do
       {:ok, tickers} ->
-        ticker_data = Enum.find(tickers, fn t -> t["ticker"] == ticker end)
+        ticker_data = Enum.find(tickers, fn t -> t["ticker"] == upcase_ticker end)
 
         case ticker_data do
           nil ->
@@ -536,9 +536,9 @@ defmodule EDGAR do
   """
   @spec company_facts(cik :: String.t()) :: success_type(map()) | error_type()
   def company_facts(cik) do
-    cik = String.pad_leading(cik, 10, "0")
+    padded_cik = String.pad_leading(cik, 10, "0")
 
-    "#{@edgar_data_url}/api/xbrl/companyfacts/CIK#{cik}.json"
+    "#{@edgar_data_url}/api/xbrl/companyfacts/CIK#{padded_cik}.json"
     |> get_json()
   end
 
@@ -554,9 +554,9 @@ defmodule EDGAR do
   @spec company_concept(cik :: String.t(), taxonomy :: String.t(), tag :: String.t()) ::
           success_type(map()) | error_type()
   def company_concept(cik, taxonomy, tag) do
-    cik = String.pad_leading(cik, 10, "0")
+    padded_cik = String.pad_leading(cik, 10, "0")
 
-    "#{@edgar_data_url}/api/xbrl/companyconcept/CIK#{cik}/#{taxonomy}/#{tag}.json"
+    "#{@edgar_data_url}/api/xbrl/companyconcept/CIK#{padded_cik}/#{taxonomy}/#{tag}.json"
     |> get_json()
   end
 
@@ -907,13 +907,13 @@ defmodule EDGAR do
           end)
 
         if primary_doc_file && table_xml_file do
-          acc_no = String.replace(accession_number, "-", "")
+          formatted_acc_no = String.replace(accession_number, "-", "")
 
           primary_doc_url =
-            "#{@edgar_archives_url}/data/#{cik}/#{acc_no}/#{primary_doc_file["name"]}"
+            "#{@edgar_archives_url}/data/#{cik}/#{formatted_acc_no}/#{primary_doc_file["name"]}"
 
           table_xml_url =
-            "#{@edgar_archives_url}/data/#{cik}/#{acc_no}/#{table_xml_file["name"]}"
+            "#{@edgar_archives_url}/data/#{cik}/#{formatted_acc_no}/#{table_xml_file["name"]}"
 
           with {:ok, document} <- form13f_document_from_url(primary_doc_url),
                {:ok, table} <- form13f_table_from_url(table_xml_url) do
@@ -1342,7 +1342,12 @@ defmodule EDGAR do
         {:error, "invalid month must be between 1 and 12"}
 
       {year, month} ->
-        url = "https://www.sec.gov/Archives/edgar/monthly/xbrlrss-#{year}-#{month}.xml"
+        formatted_month =
+          month
+          |> Integer.to_string()
+          |> String.pad_leading(2, "0")
+
+        url = "https://www.sec.gov/Archives/edgar/monthly/xbrlrss-#{year}-#{formatted_month}.xml"
 
         with {:ok, body} <- get(url),
              result <- filing_feed_from_string(body) do
