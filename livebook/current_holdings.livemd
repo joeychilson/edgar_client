@@ -4,7 +4,7 @@
 
 ```elixir
 Mix.install([
-  {:edgar_client, "~> 0.8.1"},
+  {:edgar_client, "~> 0.9.0"},
   {:kino_vega_lite, "~> 0.1.7"},
   {:kino_explorer, "~> 0.1.4"},
   {:kino, "~> 0.10.0"}
@@ -33,7 +33,7 @@ Kino.listen(form, fn %{data: %{cik: cik}, origin: origin} ->
 
   if cik != "" do
     {:ok, filings} = EDGAR.filings(cik, %{form_type: "13F-HR", limit: 1})
-    {:ok, form13} = EDGAR.form13f_filing(cik, hd(filings)["accessionNumber"])
+    {:ok, form13} = EDGAR.form13f_from_filing(cik, hd(filings)["accessionNumber"])
 
     company_name = form13.document.form_data.cover_page.filing_manager.name
 

@@ -630,21 +630,14 @@ defmodule EDGAR do
 
   defp form_type(filings, form_type) when is_nil(form_type), do: filings
 
-  defp form_type(filings, form_type) do
-    Enum.filter(filings, fn filing -> filing["form"] == form_type end)
-  end
+  defp form_type(filings, form_type),
+    do: Enum.filter(filings, fn filing -> filing["form"] == form_type end)
 
   defp offset(filings, offset) when is_nil(offset), do: filings
-
-  defp offset(filings, offset) do
-    Enum.drop(filings, offset)
-  end
+  defp offset(filings, offset), do: Enum.drop(filings, offset)
 
   defp limit(filings, limit) when is_nil(limit), do: filings
-
-  defp limit(filings, limit) do
-    Enum.take(filings, limit)
-  end
+  defp limit(filings, limit), do: Enum.take(filings, limit)
 
   defp format_filings(filings) do
     field_names = [
