@@ -28,23 +28,23 @@ pub fn parse_rss_feed(xml: &str) -> Result<RSSFeed, String> {
     let root_node = doc
         .root_element()
         .first_element_child()
-        .ok_or_else(|| "Could not find the root element's first child".to_string())?;
-    let title = get_string(&root_node, "title");
-    let link = get_string(&root_node, "link");
-    let description = get_string(&root_node, "description");
-    let language = get_string(&root_node, "language");
-    let pub_date = get_string(&root_node, "pubDate");
-    let last_build_date = get_string(&root_node, "lastBuildDate");
+        .ok_or_else(|| "missing first element".to_string())?;
+    let title = get_string(&root_node, "title").ok();
+    let link = get_string(&root_node, "link").ok();
+    let description = get_string(&root_node, "description").ok();
+    let language = get_string(&root_node, "language").ok();
+    let pub_date = get_string(&root_node, "pubDate").ok();
+    let last_build_date = get_string(&root_node, "lastBuildDate").ok();
 
     let items = root_node
         .children()
         .filter(|node| node.has_tag_name("item"))
         .map(|item_node| {
-            let title = get_string(&item_node, "title");
-            let link = get_string(&item_node, "link");
-            let description = get_string(&item_node, "description");
-            let category = get_string(&item_node, "category");
-            let pub_date = get_string(&item_node, "pubDate");
+            let title = get_string(&item_node, "title").ok();
+            let link = get_string(&item_node, "link").ok();
+            let description = get_string(&item_node, "description").ok();
+            let category = get_string(&item_node, "category").ok();
+            let pub_date = get_string(&item_node, "pubDate").ok();
 
             Ok::<Item, String>(Item {
                 title,
@@ -117,9 +117,9 @@ pub struct Link {
 pub fn parse_current_feed(xml: &str) -> Result<CurrentFeed, String> {
     let doc = XMLDoc::parse(xml).map_err(|e| e.to_string())?;
     let root_node = doc.root_element();
-    let id = get_string(&root_node, "id");
-    let title = get_string(&root_node, "title");
-    let updated = get_string(&root_node, "updated");
+    let id = get_string(&root_node, "id").ok();
+    let title = get_string(&root_node, "title").ok();
+    let updated = get_string(&root_node, "updated").ok();
     let links = parse_links(&root_node)?;
     let author = parse_author(&root_node)?;
 
@@ -127,9 +127,9 @@ pub fn parse_current_feed(xml: &str) -> Result<CurrentFeed, String> {
         .children()
         .filter(|node| node.has_tag_name("entry"))
         .map(|entry_node| {
-            let id = get_string(&entry_node, "id");
-            let updated = get_string(&entry_node, "updated");
-            let title = get_string(&entry_node, "title");
+            let id = get_string(&entry_node, "id").ok();
+            let updated = get_string(&entry_node, "updated").ok();
+            let title = get_string(&entry_node, "title").ok();
             let link = parse_link(&entry_node)?;
             let category = parse_category(&entry_node)?;
             let summary = parse_summary(&entry_node)?;
@@ -230,9 +230,9 @@ pub struct Content {
 pub fn parse_company_feed(xml: &str) -> Result<CompanyFeed, String> {
     let doc = XMLDoc::parse(xml).map_err(|e| e.to_string())?;
     let root_node = doc.root_element();
-    let id = get_string(&root_node, "id");
-    let title = get_string(&root_node, "title");
-    let updated = get_string(&root_node, "updated");
+    let id = get_string(&root_node, "id").ok();
+    let title = get_string(&root_node, "title").ok();
+    let updated = get_string(&root_node, "updated").ok();
     let links = parse_links(&root_node)?;
     let author = parse_author(&root_node)?;
 
@@ -240,17 +240,17 @@ pub fn parse_company_feed(xml: &str) -> Result<CompanyFeed, String> {
         .children()
         .find(|node| node.has_tag_name("company-info"))
         .map(|company_node| {
-            let assigned_sic = get_int32(&company_node, "assigned-sic");
-            let assigned_sic_desc = get_string(&company_node, "assigned-sic-desc");
-            let assigned_sic_href = get_string(&company_node, "assigned-sic-href");
-            let cik = get_string(&company_node, "cik");
-            let cik_href = get_string(&company_node, "cik-href");
-            let conformed_name = get_string(&company_node, "conformed-name");
-            let fiscal_year_end = get_int32(&company_node, "fiscal-year-end");
-            let office = get_string(&company_node, "office");
-            let state_location = get_string(&company_node, "state-location");
-            let state_location_href = get_string(&company_node, "state-location-href");
-            let state_of_incorporation = get_string(&company_node, "state-of-incorporation");
+            let assigned_sic = get_int32(&company_node, "assigned-sic").ok();
+            let assigned_sic_desc = get_string(&company_node, "assigned-sic-desc").ok();
+            let assigned_sic_href = get_string(&company_node, "assigned-sic-href").ok();
+            let cik = get_string(&company_node, "cik").ok();
+            let cik_href = get_string(&company_node, "cik-href").ok();
+            let conformed_name = get_string(&company_node, "conformed-name").ok();
+            let fiscal_year_end = get_int32(&company_node, "fiscal-year-end").ok();
+            let office = get_string(&company_node, "office").ok();
+            let state_location = get_string(&company_node, "state-location").ok();
+            let state_location_href = get_string(&company_node, "state-location-href").ok();
+            let state_of_incorporation = get_string(&company_node, "state-of-incorporation").ok();
 
             let addresses = company_node
                 .children()
@@ -260,13 +260,13 @@ pub fn parse_company_feed(xml: &str) -> Result<CompanyFeed, String> {
                         .children()
                         .filter(|n| n.has_tag_name("address"))
                         .map(|address_node| {
-                            let address_type = get_string(&address_node, "address-type");
-                            let city = get_string(&address_node, "city");
-                            let phone = get_string(&address_node, "phone");
-                            let state = get_string(&address_node, "state");
-                            let street1 = get_string(&address_node, "street1");
-                            let street2 = get_string(&address_node, "street2");
-                            let zip = get_string(&address_node, "zip");
+                            let address_type = get_string(&address_node, "address-type").ok();
+                            let city = get_string(&address_node, "city").ok();
+                            let phone = get_string(&address_node, "phone").ok();
+                            let state = get_string(&address_node, "state").ok();
+                            let street1 = get_string(&address_node, "street1").ok();
+                            let street2 = get_string(&address_node, "street2").ok();
+                            let zip = get_string(&address_node, "zip").ok();
 
                             Ok::<Address, String>(Address {
                                 address_type,
@@ -305,9 +305,9 @@ pub fn parse_company_feed(xml: &str) -> Result<CompanyFeed, String> {
         .children()
         .filter(|node| node.has_tag_name("entry"))
         .map(|entry_node| {
-            let id = get_string(&entry_node, "id");
-            let updated = get_string(&entry_node, "updated");
-            let title = get_string(&entry_node, "title");
+            let id = get_string(&entry_node, "id").ok();
+            let updated = get_string(&entry_node, "updated").ok();
+            let title = get_string(&entry_node, "title").ok();
             let link = parse_link(&entry_node)?;
             let category = parse_category(&entry_node)?;
             let summary = parse_summary(&entry_node)?;
@@ -317,18 +317,18 @@ pub fn parse_company_feed(xml: &str) -> Result<CompanyFeed, String> {
                 .find(|node| node.has_tag_name("content"))
                 .map(|content_node| {
                     let content_type = content_node.attribute("type").map(|s| s.to_string());
-                    let accession_number = get_string(&content_node, "accession-number");
-                    let act = get_string(&content_node, "act");
-                    let file_number = get_string(&content_node, "file-number");
-                    let file_number_href = get_string(&content_node, "file-number-href");
-                    let filing_date = get_string(&content_node, "filing-date");
-                    let filing_href = get_string(&content_node, "filing-href");
-                    let filing_type = get_string(&content_node, "filing-type");
-                    let film_number = get_int32(&content_node, "film-number");
-                    let form_name = get_string(&content_node, "form-name");
-                    let items_desc = get_string(&content_node, "items-desc");
-                    let size = get_string(&content_node, "size");
-                    let xbrl_href = get_string(&content_node, "xbrl_href");
+                    let accession_number = get_string(&content_node, "accession-number").ok();
+                    let act = get_string(&content_node, "act").ok();
+                    let file_number = get_string(&content_node, "file-number").ok();
+                    let file_number_href = get_string(&content_node, "file-number-href").ok();
+                    let filing_date = get_string(&content_node, "filing-date").ok();
+                    let filing_href = get_string(&content_node, "filing-href").ok();
+                    let filing_type = get_string(&content_node, "filing-type").ok();
+                    let film_number = get_int32(&content_node, "film-number").ok();
+                    let form_name = get_string(&content_node, "form-name").ok();
+                    let items_desc = get_string(&content_node, "items-desc").ok();
+                    let size = get_string(&content_node, "size").ok();
+                    let xbrl_href = get_string(&content_node, "xbrl_href").ok();
 
                     Ok::<Content, String>(Content {
                         content_type,
@@ -375,8 +375,8 @@ fn parse_author(node: &roxmltree::Node) -> Result<Option<Author>, String> {
     node.children()
         .find(|node| node.has_tag_name("author"))
         .map(|author_node| {
-            let name = get_string(&author_node, "name");
-            let email = get_string(&author_node, "email");
+            let name = get_string(&author_node, "name").ok();
+            let email = get_string(&author_node, "email").ok();
 
             Ok::<Author, String>(Author { name, email })
         })
@@ -512,24 +512,24 @@ pub fn parse_filing_feed(xml: &str) -> Result<FilingFeed, String> {
     let root_node = doc
         .root_element()
         .first_element_child()
-        .ok_or_else(|| "Could not find the root element's first child".to_string())?;
-    let title = get_string(&root_node, "title");
-    let link = get_string(&root_node, "link");
-    let description = get_string(&root_node, "description");
-    let language = get_string(&root_node, "language");
-    let pub_date = get_string(&root_node, "pubDate");
-    let last_build_date = get_string(&root_node, "lastBuildDate");
+        .ok_or_else(|| "missing first element".to_string())?;
+    let title = get_string(&root_node, "title").ok();
+    let link = get_string(&root_node, "link").ok();
+    let description = get_string(&root_node, "description").ok();
+    let language = get_string(&root_node, "language").ok();
+    let pub_date = get_string(&root_node, "pubDate").ok();
+    let last_build_date = get_string(&root_node, "lastBuildDate").ok();
 
     let items = root_node
         .children()
         .filter(|node| node.has_tag_name("item"))
         .map(|item_node| {
-            let title = get_string(&item_node, "title");
-            let link = get_string(&item_node, "link");
-            let guid = get_string(&item_node, "guid");
+            let title = get_string(&item_node, "title").ok();
+            let link = get_string(&item_node, "link").ok();
+            let guid = get_string(&item_node, "guid").ok();
             let enclosure = parse_enclosure(&item_node)?;
-            let description = get_string(&item_node, "description");
-            let pub_date = get_string(&item_node, "pubDate");
+            let description = get_string(&item_node, "description").ok();
+            let pub_date = get_string(&item_node, "pubDate").ok();
             let filing = parse_filing(&item_node)?;
 
             Ok::<FilingItem, String>(FilingItem {
@@ -578,17 +578,17 @@ fn parse_filing(node: &roxmltree::Node) -> Result<Option<Filing>, String> {
     node.children()
         .find(|node| node.has_tag_name("xbrlFiling"))
         .map(|filing_node| {
-            let cik = get_string(&filing_node, "cikNumber");
-            let company_name = get_string(&filing_node, "companyName");
-            let filing_date = get_string(&filing_node, "filingDate");
-            let acceptance_datetime = get_string(&filing_node, "acceptanceDatetime");
-            let period = get_string(&filing_node, "period");
-            let accession_number = get_string(&filing_node, "accessionNumber");
-            let file_number = get_string(&filing_node, "fileNumber");
-            let form_type = get_string(&filing_node, "formType");
-            let assistant_director = get_string(&filing_node, "assistantDirector");
-            let assigned_sic = get_int32(&filing_node, "assignedSic");
-            let fiscal_year_end = get_string(&filing_node, "fiscalYearEnd");
+            let cik = get_string(&filing_node, "cikNumber").ok();
+            let company_name = get_string(&filing_node, "companyName").ok();
+            let filing_date = get_string(&filing_node, "filingDate").ok();
+            let acceptance_datetime = get_string(&filing_node, "acceptanceDatetime").ok();
+            let period = get_string(&filing_node, "period").ok();
+            let accession_number = get_string(&filing_node, "accessionNumber").ok();
+            let file_number = get_string(&filing_node, "fileNumber").ok();
+            let form_type = get_string(&filing_node, "formType").ok();
+            let assistant_director = get_string(&filing_node, "assistantDirector").ok();
+            let assigned_sic = get_int32(&filing_node, "assignedSic").ok();
+            let fiscal_year_end = get_string(&filing_node, "fiscalYearEnd").ok();
             let files = parse_files(&filing_node)?;
 
             Ok::<Filing, String>(Filing {

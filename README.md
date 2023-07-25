@@ -11,7 +11,7 @@ This library is a work in progress. The API is subject to change.
 ```elixir
 def deps do
   [
-    {:edgar_client, "~> 0.8.1"}
+    {:edgar_client, "~> 0.9.0"}
   ]
 end
 ```
@@ -24,5 +24,4 @@ config :edgar_client, :user_agent, "name <email>"
 ```
 
 ## TODO
-- [ ] Improve tests
-- [ ] Add more tests
+- [ ] Add and improve testing

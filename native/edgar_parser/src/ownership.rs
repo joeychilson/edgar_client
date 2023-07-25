@@ -7,40 +7,40 @@ use rustler::NifMap;
 #[derive(NifMap)]
 pub struct Document {
     schema_version: Option<String>,
-    document_type: Option<String>,
-    period_of_report: Option<String>,
+    document_type: String,
+    period_of_report: String,
     date_of_original_submission: Option<String>,
     no_securities_owned: Option<bool>,
     not_subject_to_section_16: Option<bool>,
     form3_holdings_reported: Option<bool>,
     form4_transactions_reported: Option<bool>,
-    issuer: Option<Issuer>,
-    reporting_owner: Option<ReportingOwner>,
+    issuer: Issuer,
+    reporting_owner: ReportingOwner,
     aff10b5_one: Option<bool>,
     non_derivative_table: Option<NonDerivativeTable>,
     derivative_table: Option<DerivativeTable>,
     footnotes: Vec<Footnote>,
     remarks: Option<String>,
-    owner_signature: Option<OwnerSignature>,
+    owner_signature: OwnerSignature,
 }
 
 #[derive(NifMap)]
 pub struct Issuer {
-    cik: Option<String>,
+    cik: String,
     name: Option<String>,
-    trading_symbol: Option<String>,
+    trading_symbol: String,
 }
 
 #[derive(NifMap)]
 pub struct ReportingOwner {
-    id: Option<ReportingOwnerID>,
+    id: ReportingOwnerID,
     address: Option<ReportingOwnerAddress>,
     relationship: Option<ReportingOwnerRelationship>,
 }
 
 #[derive(NifMap)]
 pub struct ReportingOwnerID {
-    cik: Option<String>,
+    cik: String,
     ccc: Option<String>,
     name: Option<String>,
 }
@@ -180,8 +180,8 @@ pub struct Footnote {
 
 #[derive(NifMap)]
 pub struct OwnerSignature {
-    name: Option<String>,
-    date: Option<String>,
+    name: String,
+    date: String,
 }
 
 #[derive(NifMap)]
@@ -194,21 +194,21 @@ pub struct ValueFootnote {
 pub fn parse_ownership_form(xml: &str) -> Result<Document, String> {
     let doc = XMLDoc::parse(xml).map_err(|e| e.to_string())?;
     let root_node = doc.root_element();
-    let schema_version = get_string(&root_node, "schemaVersion");
-    let document_type = get_string(&root_node, "documentType");
-    let period_of_report = get_string(&root_node, "periodOfReport");
-    let date_of_original_submission = get_string(&root_node, "dateOfOriginalSubmission");
-    let no_securities_owned = get_bool(&root_node, "noSecuritiesOwned");
-    let not_subject_to_section_16 = get_bool(&root_node, "notSubjectToSection16");
-    let form3_holdings_reported = get_bool(&root_node, "form3HoldingsReported");
-    let form4_transactions_reported = get_bool(&root_node, "form4TransactionsReported");
-    let aff10b5_one = get_bool(&root_node, "aff10b5One");
+    let schema_version = get_string(&root_node, "schemaVersion").ok();
+    let document_type = get_string(&root_node, "documentType")?;
+    let period_of_report = get_string(&root_node, "periodOfReport")?;
+    let date_of_original_submission = get_string(&root_node, "dateOfOriginalSubmission").ok();
+    let no_securities_owned = get_bool(&root_node, "noSecuritiesOwned").ok();
+    let not_subject_to_section_16 = get_bool(&root_node, "notSubjectToSection16").ok();
+    let form3_holdings_reported = get_bool(&root_node, "form3HoldingsReported").ok();
+    let form4_transactions_reported = get_bool(&root_node, "form4TransactionsReported").ok();
+    let aff10b5_one = get_bool(&root_node, "aff10b5One").ok();
     let issuer = parse_issuer(&root_node)?;
     let reporting_owner = parse_reporting_owner(&root_node)?;
     let non_derivative_table = parse_non_derivative_table(&root_node)?;
     let derivative_table = parse_derivative_table(&root_node)?;
     let footnotes = parse_footnotes(&root_node)?;
-    let remarks = get_string(&root_node, "remarks");
+    let remarks = get_string(&root_node, "remarks").ok();
     let owner_signature = parse_owner_signature(&root_node)?;
 
     Ok(Document {
@@ -231,13 +231,14 @@ pub fn parse_ownership_form(xml: &str) -> Result<Document, String> {
     })
 }
 
-fn parse_issuer(node: &roxmltree::Node) -> Result<Option<Issuer>, String> {
+fn parse_issuer(node: &roxmltree::Node) -> Result<Issuer, String> {
     node.children()
         .find(|node| node.has_tag_name("issuer"))
-        .map(|issuer_node| {
-            let cik = get_string(&issuer_node, "issuerCik");
-            let name = get_string(&issuer_node, "issuerName");
-            let trading_symbol = get_string(&issuer_node, "issuerTradingSymbol");
+        .ok_or("issuer not found".to_string())
+        .and_then(|issuer_node| {
+            let cik = get_string(&issuer_node, "issuerCik")?;
+            let name = get_string(&issuer_node, "issuerName").ok();
+            let trading_symbol = get_string(&issuer_node, "issuerTradingSymbol")?;
 
             Ok(Issuer {
                 cik,
@@ -245,13 +246,13 @@ fn parse_issuer(node: &roxmltree::Node) -> Result<Option<Issuer>, String> {
                 trading_symbol,
             })
         })
-        .transpose()
 }
 
-fn parse_reporting_owner(node: &roxmltree::Node) -> Result<Option<ReportingOwner>, String> {
+fn parse_reporting_owner(node: &roxmltree::Node) -> Result<ReportingOwner, String> {
     node.children()
         .find(|node| node.has_tag_name("reportingOwner"))
-        .map(|owner_node| {
+        .ok_or("reportingOwner not found".to_string())
+        .and_then(|owner_node| {
             let id = parse_reporting_owner_id(&owner_node)?;
             let address = parse_reporting_owner_address(&owner_node)?;
             let relationship = parse_reporting_owner_relationship(&owner_node)?;
@@ -262,20 +263,19 @@ fn parse_reporting_owner(node: &roxmltree::Node) -> Result<Option<ReportingOwner
                 relationship,
             })
         })
-        .transpose()
 }
 
-fn parse_reporting_owner_id(node: &roxmltree::Node) -> Result<Option<ReportingOwnerID>, String> {
+fn parse_reporting_owner_id(node: &roxmltree::Node) -> Result<ReportingOwnerID, String> {
     node.children()
         .find(|node| node.has_tag_name("reportingOwnerId"))
-        .map(|id_node| {
-            let cik = get_string(&id_node, "rptOwnerCik");
-            let ccc = get_string(&id_node, "rptOwnerCcc");
-            let name = get_string(&id_node, "rptOwnerName");
+        .ok_or("reportingOwnerId not found".to_string())
+        .and_then(|id_node| {
+            let cik = get_string(&id_node, "rptOwnerCik")?;
+            let ccc = get_string(&id_node, "rptOwnerCcc").ok();
+            let name = get_string(&id_node, "rptOwnerName").ok();
 
             Ok(ReportingOwnerID { cik, ccc, name })
         })
-        .transpose()
 }
 
 fn parse_reporting_owner_address(
@@ -284,12 +284,12 @@ fn parse_reporting_owner_address(
     node.children()
         .find(|node| node.has_tag_name("reportingOwnerAddress"))
         .map(|address_node| {
-            let street1 = get_string(&address_node, "rptOwnerStreet1");
-            let street2 = get_string(&address_node, "rptOwnerStreet2");
-            let city = get_string(&address_node, "rptOwnerCity");
-            let state = get_string(&address_node, "rptOwnerState");
-            let zip_code = get_string(&address_node, "rptOwnerZipCode");
-            let state_description = get_string(&address_node, "rptOwnerStateDescription");
+            let street1 = get_string(&address_node, "rptOwnerStreet1").ok();
+            let street2 = get_string(&address_node, "rptOwnerStreet2").ok();
+            let city = get_string(&address_node, "rptOwnerCity").ok();
+            let state = get_string(&address_node, "rptOwnerState").ok();
+            let zip_code = get_string(&address_node, "rptOwnerZipCode").ok();
+            let state_description = get_string(&address_node, "rptOwnerStateDescription").ok();
 
             Ok(ReportingOwnerAddress {
                 street1,
@@ -309,12 +309,12 @@ fn parse_reporting_owner_relationship(
     node.children()
         .find(|node| node.has_tag_name("reportingOwnerRelationship"))
         .map(|relationship_node| {
-            let is_director = get_bool(&relationship_node, "isDirector");
-            let is_officer = get_bool(&relationship_node, "isOfficer");
-            let is_ten_percent_owner = get_bool(&relationship_node, "isTenPercentOwner");
-            let is_other = get_bool(&relationship_node, "isOther");
-            let officer_title = get_string(&relationship_node, "officerTitle");
-            let other_text = get_string(&relationship_node, "otherText");
+            let is_director = get_bool(&relationship_node, "isDirector").ok();
+            let is_officer = get_bool(&relationship_node, "isOfficer").ok();
+            let is_ten_percent_owner = get_bool(&relationship_node, "isTenPercentOwner").ok();
+            let is_other = get_bool(&relationship_node, "isOther").ok();
+            let officer_title = get_string(&relationship_node, "officerTitle").ok();
+            let other_text = get_string(&relationship_node, "otherText").ok();
 
             Ok(ReportingOwnerRelationship {
                 is_director,
@@ -492,10 +492,10 @@ fn parse_transaction_coding(node: &roxmltree::Node) -> Result<Option<Transaction
     node.children()
         .find(|node| node.has_tag_name("transactionCoding"))
         .map(|coding_node| {
-            let form_type = get_string(&coding_node, "transactionFormType");
-            let transaction_code = get_string(&coding_node, "transactionCode");
-            let equity_swap_involved = get_bool(&coding_node, "equitySwapInvolved");
-            let footnote_id = get_string(&coding_node, "footnoteId");
+            let form_type = get_string(&coding_node, "transactionFormType").ok();
+            let transaction_code = get_string(&coding_node, "transactionCode").ok();
+            let equity_swap_involved = get_bool(&coding_node, "equitySwapInvolved").ok();
+            let footnote_id = get_string(&coding_node, "footnoteId").ok();
 
             Ok(TransactionCoding {
                 form_type,
@@ -511,8 +511,8 @@ fn parse_holding_coding(node: &roxmltree::Node) -> Result<Option<HoldingCoding>,
     node.children()
         .find(|node| node.has_tag_name("transactionCoding"))
         .map(|coding_node| {
-            let form_type = get_string(&coding_node, "transactionFormType");
-            let footnote_id = get_string(&coding_node, "footnoteId");
+            let form_type = get_string(&coding_node, "transactionFormType").ok();
+            let footnote_id = get_string(&coding_node, "footnoteId").ok();
 
             Ok(HoldingCoding {
                 form_type,
@@ -630,16 +630,16 @@ fn parse_footnotes(node: &roxmltree::Node) -> Result<Vec<Footnote>, String> {
     Ok(footnotes)
 }
 
-fn parse_owner_signature(node: &roxmltree::Node) -> Result<Option<OwnerSignature>, String> {
+fn parse_owner_signature(node: &roxmltree::Node) -> Result<OwnerSignature, String> {
     node.children()
         .find(|node| node.has_tag_name("ownerSignature"))
-        .map(|signature_node| {
-            let name = get_string(&signature_node, "signatureName");
-            let date = get_string(&signature_node, "signatureDate");
+        .ok_or("ownerSignature not found".to_string())
+        .and_then(|signature_node| {
+            let name = get_string(&signature_node, "signatureName")?;
+            let date = get_string(&signature_node, "signatureDate")?;
 
             Ok(OwnerSignature { name, date })
         })
-        .transpose()
 }
 
 fn get_value_footnote(node: &roxmltree::Node, tag: &str) -> Option<ValueFootnote> {

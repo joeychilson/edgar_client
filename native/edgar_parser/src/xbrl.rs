@@ -47,7 +47,7 @@ pub fn parse_xbrl(xbrl: &str) -> Result<Document, String> {
         .iter()
         .find(|ns| ns.name() == Some("xbrldi"))
         .map(|ns| ns.uri())
-        .unwrap_or("");
+        .unwrap_or_default();
 
     let units = parse_units(&root)?;
     let contexts = parse_contexts(&root, &xbrldi_ns)?;
