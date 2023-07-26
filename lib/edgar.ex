@@ -22,7 +22,7 @@ defmodule EDGAR do
   """
   @spec company_tickers :: success_type(list()) | error_type()
   def company_tickers() do
-    case get_json("#{@edgar_files_url}/company_tickers.json") do
+    case get("#{@edgar_files_url}/company_tickers.json") do
       {:ok, result} ->
         {:ok, Map.values(result)}
 
@@ -36,7 +36,7 @@ defmodule EDGAR do
   """
   @spec company_tickers_with_exchange :: success_type(list()) | error_type()
   def company_tickers_with_exchange do
-    case get_json("#{@edgar_files_url}/company_tickers_exchange.json") do
+    case get("#{@edgar_files_url}/company_tickers_exchange.json") do
       {:ok, %{"data" => data, "fields" => fields}} ->
         result = for row <- data, into: [], do: Enum.zip(fields, row) |> Enum.into(%{})
         {:ok, result}
@@ -51,7 +51,7 @@ defmodule EDGAR do
   """
   @spec mutual_fund_tickers :: success_type(list()) | error_type()
   def mutual_fund_tickers do
-    case get_json("#{@edgar_files_url}/company_tickers_mf.json") do
+    case get("#{@edgar_files_url}/company_tickers_mf.json") do
       {:ok, %{"data" => data, "fields" => fields}} ->
         result = for row <- data, into: [], do: Enum.zip(fields, row) |> Enum.into(%{})
         {:ok, result}
@@ -81,7 +81,7 @@ defmodule EDGAR do
             {:error, "ticker not found"}
 
           _ ->
-            {:ok, Integer.to_string(ticker_data["cik_str"])}
+            {:ok, ticker_data["cik_str"]}
         end
 
       {:error, _} = error ->
@@ -109,7 +109,7 @@ defmodule EDGAR do
             {:error, "ticker not found"}
 
           _ ->
-            {:ok, Integer.to_string(ticker_data["cik"])}
+            {:ok, ticker_data["cik"]}
         end
 
       {:error, _} = error ->
@@ -128,8 +128,13 @@ defmodule EDGAR do
   def entity_directory(cik) do
     padded_cik = String.pad_leading(cik, 10, "0")
 
-    "#{@edgar_archives_url}/data/#{padded_cik}/index.json"
-    |> get_json()
+    case get("#{@edgar_archives_url}/data/#{padded_cik}/index.json") do
+      {:ok, resp} ->
+        Jason.decode(resp)
+
+      error ->
+        error
+    end
   end
 
   @doc """
@@ -145,8 +150,13 @@ defmodule EDGAR do
   def filing_directory(cik, accession_number) do
     formatted_acc_no = String.replace(accession_number, "-", "")
 
-    "#{@edgar_archives_url}/data/#{cik}/#{formatted_acc_no}/index.json"
-    |> get_json()
+    case get("#{@edgar_archives_url}/data/#{cik}/#{formatted_acc_no}/index.json") do
+      {:ok, resp} ->
+        Jason.decode(resp)
+
+      error ->
+        error
+    end
   end
 
   @doc """
@@ -162,21 +172,21 @@ defmodule EDGAR do
   def daily_index(year \\ nil, quarter \\ nil) do
     case {year, quarter} do
       {nil, nil} ->
-        get_json("#{@edgar_archives_url}/daily-index/index.json")
+        get("#{@edgar_archives_url}/daily-index/index.json")
 
       {year, _} when year < 1994 ->
-        {:error, "invalid year must be 1994 or greater"}
+        {:error, "year must be 1994 or greater"}
 
       {year, nil} ->
-        get_json("#{@edgar_archives_url}/daily-index/#{Integer.to_string(year)}/index.json")
+        get("#{@edgar_archives_url}/daily-index/#{Integer.to_string(year)}/index.json")
 
       {_, quarter} when quarter < 1 or quarter > 4 ->
-        {:error, "invalid quarter must be between 1 and 4"}
+        {:error, "quarter must be between 1 and 4"}
 
       {year, quarter} ->
         year_str = Integer.to_string(year)
         quarter_str = Integer.to_string(quarter)
-        get_json("#{@edgar_archives_url}/daily-index/#{year_str}/QTR#{quarter_str}/index.json")
+        get("#{@edgar_archives_url}/daily-index/#{year_str}/QTR#{quarter_str}/index.json")
     end
   end
 
@@ -193,21 +203,21 @@ defmodule EDGAR do
   def full_index(year \\ nil, quarter \\ nil) do
     case {year, quarter} do
       {nil, nil} ->
-        get_json("#{@edgar_archives_url}/full-index/index.json")
+        get("#{@edgar_archives_url}/full-index/index.json")
 
       {year, _} when year < 1994 ->
-        {:error, "invalid year (must be 1994 or greater)"}
+        {:error, "year must be 1994 or greater"}
 
       {year, nil} ->
-        get_json("#{@edgar_archives_url}/full-index/#{Integer.to_string(year)}/index.json")
+        get("#{@edgar_archives_url}/full-index/#{Integer.to_string(year)}/index.json")
 
       {_, quarter} when quarter < 1 or quarter > 4 ->
-        {:error, "invalid quarter (must be between 1 and 4)"}
+        {:error, "quarter must be between 1 and 4"}
 
       {year, quarter} ->
         year_str = Integer.to_string(year)
         quarter_str = Integer.to_string(quarter)
-        get_json("#{@edgar_archives_url}/full-index/#{year_str}/QTR#{quarter_str}/index.json")
+        get("#{@edgar_archives_url}/full-index/#{year_str}/QTR#{quarter_str}/index.json")
     end
   end
 
@@ -520,7 +530,7 @@ defmodule EDGAR do
     padded_cik = String.pad_leading(cik, 10, "0")
 
     "#{@edgar_data_url}/submissions/CIK#{padded_cik}.json"
-    |> get_json()
+    |> get()
   end
 
   @doc """
@@ -535,7 +545,7 @@ defmodule EDGAR do
     padded_cik = String.pad_leading(cik, 10, "0")
 
     "#{@edgar_data_url}/api/xbrl/companyfacts/CIK#{padded_cik}.json"
-    |> get_json()
+    |> get()
   end
 
   @doc """
@@ -553,7 +563,7 @@ defmodule EDGAR do
     padded_cik = String.pad_leading(cik, 10, "0")
 
     "#{@edgar_data_url}/api/xbrl/companyconcept/CIK#{padded_cik}/#{taxonomy}/#{tag}.json"
-    |> get_json()
+    |> get()
   end
 
   @doc """
@@ -575,7 +585,7 @@ defmodule EDGAR do
           success_type(map()) | error_type()
   def frames(taxonomy, tag, unit, period) do
     "#{@edgar_data_url}/api/xbrl/frames/#{taxonomy}/#{tag}/#{unit}/#{period}.json"
-    |> get_json()
+    |> get()
   end
 
   @doc """
@@ -617,7 +627,7 @@ defmodule EDGAR do
   defp append_file_filings(filings, files) do
     formatted_file_filings =
       Enum.flat_map(files, fn file ->
-        {:ok, file_data} = get_json("#{@edgar_data_url}/submissions/#{file["name"]}")
+        {:ok, file_data} = get("#{@edgar_data_url}/submissions/#{file["name"]}")
         format_filings(file_data)
       end)
 
@@ -657,9 +667,6 @@ defmodule EDGAR do
 
   @doc """
   Parses form 3 and 3/A filing types from a given CIK and accession number
-
-  Based on the XML schema found here:
-  - https://www.sec.gov/info/edgar/specifications/ownershipxmltechspec
 
   ## Required
 
@@ -703,9 +710,6 @@ defmodule EDGAR do
   @doc """
   Parses form 4 and 4/A filing types from a given CIK and accession number
 
-  Based on the XML schema found here:
-  - https://www.sec.gov/info/edgar/specifications/ownershipxmltechspec
-
   ## Required
 
   * `cik` - The CIK of the entity
@@ -748,9 +752,6 @@ defmodule EDGAR do
   @doc """
   Parses form 5 and 5/A filing types from a given CIK and accession number
 
-  Based on the XML schema found here:
-  - https://www.sec.gov/info/edgar/specifications/ownershipxmltechspec
-
   ## Required
 
   * `cik` - The CIK of the entity
@@ -792,9 +793,6 @@ defmodule EDGAR do
 
   @doc """
   Parses form 3, 3/A, 4, 4/A, 5, and 5/A ownership filing types from a given CIK and accession number
-
-  Based on the XML schema found here:
-  - https://www.sec.gov/info/edgar/specifications/ownershipxmltechspec
 
   ## Required
 
@@ -839,9 +837,6 @@ defmodule EDGAR do
   @doc """
   Parses form 3, 3/A, 4, 4/A, 5, and 5/A ownership filing types from a given url
 
-  Based on the XML schema found here:
-  - https://www.sec.gov/info/edgar/specifications/ownershipxmltechspec
-
   ## Required
 
   * `url` - The url of the form 4 to parse
@@ -853,9 +848,6 @@ defmodule EDGAR do
 
   @doc """
   Parses form 3, 3/A, 4, 4/A, 5, and 5/A filing types from a string
-
-  Based on the XML schema found here:
-  - https://www.sec.gov/info/edgar/specifications/ownershipxmltechspec
 
   ## Required
 
@@ -1101,15 +1093,6 @@ defmodule EDGAR do
   end
 
   @doc """
-  Fetches the testimony feed
-  """
-  @spec testimony_feed :: success_type(map()) | error_type()
-  def testimony_feed do
-    url = "https://www.sec.gov/news/testimony.rss"
-    with {:ok, body} <- get(url), do: rss_feed_from_string(body)
-  end
-
-  @doc """
   Fetches the statements feed
   """
   @spec statements_feed :: success_type(map()) | error_type()
@@ -1119,11 +1102,20 @@ defmodule EDGAR do
   end
 
   @doc """
+  Fetches the testimony feed
+  """
+  @spec testimony_feed :: success_type(map()) | error_type()
+  def testimony_feed do
+    url = "https://www.sec.gov/news/testimony.rss"
+    with {:ok, body} <- get(url), do: rss_feed_from_string(body)
+  end
+
+  @doc """
   Fetches the litigation feed
   """
   @spec litigation_feed :: success_type(map()) | error_type()
   def litigation_feed do
-    url = "https://www.sec.gov/litigation/litreleases.rss"
+    url = "https://www.sec.gov/rss/litigation/litreleases.xml"
     with {:ok, body} <- get(url), do: rss_feed_from_string(body)
   end
 
@@ -1231,10 +1223,10 @@ defmodule EDGAR do
   def historical_xbrl_feed(year, month) do
     case {year, month} do
       {year, _} when year < 2005 ->
-        {:error, "invalid year must be 2005 or later"}
+        {:error, "year must be 2005 or later"}
 
       {_, month} when month < 1 or month > 12 ->
-        {:error, "invalid month must be between 1 and 12"}
+        {:error, "month must be between 1 and 12"}
 
       {year, month} ->
         formatted_month =
@@ -1257,31 +1249,22 @@ defmodule EDGAR do
   @spec filing_feed_from_string(xml_str :: String.t()) :: success_type(map()) | error_type()
   def filing_feed_from_string(xml_str), do: EDGAR.Native.parse_filing_feed(xml_str)
 
-  @doc false
-  defp get_json(url) do
-    with {:ok, body} <- get(url), do: Jason.decode(body)
-  end
-
-  @doc false
   defp get(url) do
     SimpleRateLimiter.wait_and_proceed(fn ->
       user_agent =
         Application.get_env(:edgar_client, :user_agent, "default <default@default.com>")
 
-      resp =
-        HTTPoison.get(url, [{"User-Agent", user_agent}], follow_redirect: true)
-
-      case resp do
-        {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
+      case Req.get(url, headers: [{"User-Agent", user_agent}], redirect_log_level: false) do
+        {:ok, %Req.Response{status: 200, body: body}} ->
           {:ok, body}
 
-        {:ok, %HTTPoison.Response{status_code: 404}} ->
+        {:ok, %Req.Response{status: 404}} ->
           {:error, "resource not found"}
 
-        {:ok, %HTTPoison.Response{status_code: code}} ->
+        {:ok, %Req.Response{status: code}} ->
           {:error, "unexpected status code: #{code}"}
 
-        {:error, %HTTPoison.Error{reason: reason}} ->
+        {:error, reason} ->
           {:error, reason}
       end
     end)

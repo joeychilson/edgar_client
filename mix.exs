@@ -1,7 +1,7 @@
 defmodule EDGAR.MixProject do
   use Mix.Project
 
-  @version "0.9.0"
+  @version "0.10.0"
   @description "An Elixir-based HTTP Client for SEC's EDGAR"
 
   def project do
@@ -19,14 +19,13 @@ defmodule EDGAR.MixProject do
   def application do
     [
       mod: {EDGAR, []},
-      extra_applications: [:logger, :httpoison, :jason, :simple_rate_limiter]
+      extra_applications: [:logger, :req, :jason, :simple_rate_limiter]
     ]
   end
 
   defp deps do
     [
-      {:httpoison, "~> 2.1"},
-      {:jason, "~> 1.4"},
+      {:req, "~> 0.3.0"},
       {:simple_rate_limiter, "~> 1.0"},
       {:rustler, ">= 0.29.0", optional: true},
       {:rustler_precompiled, "~> 0.6"},

@@ -2,7 +2,7 @@
 
 `EDGAR` is an Elixir-based HTTP Client for SEC's EDGAR.
 
-This library is a work in progress. The API is subject to change.
+**This library is a work in progress.**
 
 ## Installation
 
@@ -11,7 +11,7 @@ This library is a work in progress. The API is subject to change.
 ```elixir
 def deps do
   [
-    {:edgar_client, "~> 0.9.0"}
+    {:edgar_client, "~> 0.10.0"}
   ]
 end
 ```
@@ -22,6 +22,3 @@ end
 # A default user agent is provided, but you should change it to your own to prevent your requests from being blocked.
 config :edgar_client, :user_agent, "name <email>"
 ```
-
-## TODO
-- [ ] Add and improve testing

@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xbrl
+  xmlns="http://www.xbrl.org/2003/instance"
+  xmlns:brka="http://www.berkshirehathaway.com/20230506"
+  xmlns:dei="http://xbrl.sec.gov/dei/2022"
+  xmlns:link="http://www.xbrl.org/2003/linkbase"
+  xmlns:us-gaap="http://fasb.org/us-gaap/2022"
+  xmlns:xbrldi="http://xbrl.org/2006/xbrldi"
+  xmlns:xlink="http://www.w3.org/1999/xlink">
+    <link:schemaRef xlink:href="brka-20230506.xsd" xlink:type="simple"/>
+    <context id="duration_2023-05-06_to_2023-05-06">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001067983</identifier>
+        </entity>
+        <period>
+            <startDate>2023-05-06</startDate>
+            <endDate>2023-05-06</endDate>
+        </period>
+    </context>
+    <context id="duration_2023-05-06_to_2023-05-06_us-gaap-StatementClassOfStockAxis_brka-ClassACommonStockMember">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001067983</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="us-gaap:StatementClassOfStockAxis">brka:ClassACommonStockMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-05-06</startDate>
+            <endDate>2023-05-06</endDate>
+        </period>
+    </context>
+    <context id="duration_2023-05-06_to_2023-05-06_us-gaap-StatementClassOfStockAxis_brka-ClassBCommonStockMember">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001067983</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="us-gaap:StatementClassOfStockAxis">brka:ClassBCommonStockMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-05-06</startDate>
+            <endDate>2023-05-06</endDate>
+        </period>
+    </context>
+    <context id="duration_2023-05-06_to_2023-05-06_us-gaap-StatementClassOfStockAxis_brka-MOnePointThreeZeroZeroSeniorNotesDueTwoThousandTwentyFourMember">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001067983</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="us-gaap:StatementClassOfStockAxis">brka:MOnePointThreeZeroZeroSeniorNotesDueTwoThousandTwentyFourMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-05-06</startDate>
+            <endDate>2023-05-06</endDate>
+        </period>
+    </context>
+    <context id="duration_2023-05-06_to_2023-05-06_us-gaap-StatementClassOfStockAxis_brka-MZeroPointZeroZeroZeroSeniorNotesDueTwoThousandTwentyFiveMember">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001067983</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="us-gaap:StatementClassOfStockAxis">brka:MZeroPointZeroZeroZeroSeniorNotesDueTwoThousandTwentyFiveMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-05-06</startDate>
+            <endDate>2023-05-06</endDate>
+        </period>
+    </context>
+    <context id="duration_2023-05-06_to_2023-05-06_us-gaap-StatementClassOfStockAxis_brka-MOnePointOneTwoFiveSeniorNotesDueTwoThousandTwentySevenMember">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001067983</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="us-gaap:StatementClassOfStockAxis">brka:MOnePointOneTwoFiveSeniorNotesDueTwoThousandTwentySevenMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-05-06</startDate>
+            <endDate>2023-05-06</endDate>
+        </period>
+    </context>
+    <context id="duration_2023-05-06_to_2023-05-06_us-gaap-StatementClassOfStockAxis_brka-MTwoPointOneFiveZeroSeniorNotesDueTwoThousandTwentyEightMember">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001067983</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="us-gaap:StatementClassOfStockAxis">brka:MTwoPointOneFiveZeroSeniorNotesDueTwoThousandTwentyEightMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-05-06</startDate>
+            <endDate>2023-05-06</endDate>
+        </period>
+    </context>
+    <context id="duration_2023-05-06_to_2023-05-06_us-gaap-StatementClassOfStockAxis_brka-MOnePointFiveZeroZeroSeniorNotesDueTwoThousandThirtyMember">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001067983</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="us-gaap:StatementClassOfStockAxis">brka:MOnePointFiveZeroZeroSeniorNotesDueTwoThousandThirtyMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-05-06</startDate>
+            <endDate>2023-05-06</endDate>
+        </period>
+    </context>
+    <context id="duration_2023-05-06_to_2023-05-06_us-gaap-StatementClassOfStockAxis_brka-MTwoPointZeroZeroZeroSeniorNotesDueTwoThousandThirtyFourMember">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001067983</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="us-gaap:StatementClassOfStockAxis">brka:MTwoPointZeroZeroZeroSeniorNotesDueTwoThousandThirtyFourMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-05-06</startDate>
+            <endDate>2023-05-06</endDate>
+        </period>
+    </context>
+    <context id="duration_2023-05-06_to_2023-05-06_us-gaap-StatementClassOfStockAxis_brka-MOnePointSixTwoFiveSeniorNotesDueTwoThousandThirtyFiveMember">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001067983</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="us-gaap:StatementClassOfStockAxis">brka:MOnePointSixTwoFiveSeniorNotesDueTwoThousandThirtyFiveMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-05-06</startDate>
+            <endDate>2023-05-06</endDate>
+        </period>
+    </context>
+    <context id="duration_2023-05-06_to_2023-05-06_us-gaap-StatementClassOfStockAxis_brka-MTwoPointThreeSevenFiveSeniorNotesDueTwoThousandThirtyNineMember">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001067983</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="us-gaap:StatementClassOfStockAxis">brka:MTwoPointThreeSevenFiveSeniorNotesDueTwoThousandThirtyNineMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-05-06</startDate>
+            <endDate>2023-05-06</endDate>
+        </period>
+    </context>
+    <context id="duration_2023-05-06_to_2023-05-06_us-gaap-StatementClassOfStockAxis_brka-MZeroPointFiveZeroZeroSeniorNotesDueTwoThousandFortyOneMember">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001067983</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="us-gaap:StatementClassOfStockAxis">brka:MZeroPointFiveZeroZeroSeniorNotesDueTwoThousandFortyOneMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-05-06</startDate>
+            <endDate>2023-05-06</endDate>
+        </period>
+    </context>
+    <context id="duration_2023-05-06_to_2023-05-06_us-gaap-StatementClassOfStockAxis_brka-MTwoPointSixTwoFiveSeniorNotesDueTwoThousandFiftyNineMember">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001067983</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="us-gaap:StatementClassOfStockAxis">brka:MTwoPointSixTwoFiveSeniorNotesDueTwoThousandFiftyNineMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-05-06</startDate>
+            <endDate>2023-05-06</endDate>
+        </period>
+    </context>
+    <dei:EntityRegistrantName
+      contextRef="duration_2023-05-06_to_2023-05-06"
+      id="Hidden_dei_EntityRegistrantName">BERKSHIRE HATHAWAY INC</dei:EntityRegistrantName>
+    <dei:EntityIncorporationStateCountryCode
+      contextRef="duration_2023-05-06_to_2023-05-06"
+      id="Hidden_dei_EntityIncorporationStateCountryCode">DE</dei:EntityIncorporationStateCountryCode>
+    <dei:AmendmentFlag contextRef="duration_2023-05-06_to_2023-05-06">false</dei:AmendmentFlag>
+    <dei:EntityCentralIndexKey
+      contextRef="duration_2023-05-06_to_2023-05-06"
+      id="Hidden_dei_EntityCentralIndexKey">0001067983</dei:EntityCentralIndexKey>
+    <dei:CurrentFiscalYearEndDate
+      contextRef="duration_2023-05-06_to_2023-05-06"
+      id="Hidden_dei_CurrentFiscalYearEndDate_duration_2023-05-06_to_2023-05-06">--12-31</dei:CurrentFiscalYearEndDate>
+    <dei:DocumentType contextRef="duration_2023-05-06_to_2023-05-06">8-K</dei:DocumentType>
+    <dei:DocumentPeriodEndDate contextRef="duration_2023-05-06_to_2023-05-06">2023-05-06</dei:DocumentPeriodEndDate>
+    <dei:EntityFileNumber contextRef="duration_2023-05-06_to_2023-05-06">001-14905</dei:EntityFileNumber>
+    <dei:EntityTaxIdentificationNumber contextRef="duration_2023-05-06_to_2023-05-06">47-0813844</dei:EntityTaxIdentificationNumber>
+    <dei:EntityAddressAddressLine1 contextRef="duration_2023-05-06_to_2023-05-06">3555 Farnam Street</dei:EntityAddressAddressLine1>
+    <dei:EntityAddressCityOrTown contextRef="duration_2023-05-06_to_2023-05-06">Omaha</dei:EntityAddressCityOrTown>
+    <dei:EntityAddressStateOrProvince contextRef="duration_2023-05-06_to_2023-05-06">NE</dei:EntityAddressStateOrProvince>
+    <dei:EntityAddressPostalZipCode contextRef="duration_2023-05-06_to_2023-05-06">68131</dei:EntityAddressPostalZipCode>
+    <dei:CityAreaCode contextRef="duration_2023-05-06_to_2023-05-06">(402)</dei:CityAreaCode>
+    <dei:LocalPhoneNumber contextRef="duration_2023-05-06_to_2023-05-06">346-1400</dei:LocalPhoneNumber>
+    <dei:WrittenCommunications contextRef="duration_2023-05-06_to_2023-05-06">false</dei:WrittenCommunications>
+    <dei:SolicitingMaterial contextRef="duration_2023-05-06_to_2023-05-06">false</dei:SolicitingMaterial>
+    <dei:PreCommencementTenderOffer contextRef="duration_2023-05-06_to_2023-05-06">false</dei:PreCommencementTenderOffer>
+    <dei:PreCommencementIssuerTenderOffer contextRef="duration_2023-05-06_to_2023-05-06">false</dei:PreCommencementIssuerTenderOffer>
+    <dei:Security12bTitle contextRef="duration_2023-05-06_to_2023-05-06_us-gaap-StatementClassOfStockAxis_brka-ClassACommonStockMember">Class&#160;A Common Stock</dei:Security12bTitle>
+    <dei:TradingSymbol contextRef="duration_2023-05-06_to_2023-05-06_us-gaap-StatementClassOfStockAxis_brka-ClassACommonStockMember">BRK.A</dei:TradingSymbol>
+    <dei:SecurityExchangeName contextRef="duration_2023-05-06_to_2023-05-06_us-gaap-StatementClassOfStockAxis_brka-ClassACommonStockMember">NYSE</dei:SecurityExchangeName>
+    <dei:Security12bTitle contextRef="duration_2023-05-06_to_2023-05-06_us-gaap-StatementClassOfStockAxis_brka-ClassBCommonStockMember">Class&#160;B Common Stock</dei:Security12bTitle>
+    <dei:TradingSymbol contextRef="duration_2023-05-06_to_2023-05-06_us-gaap-StatementClassOfStockAxis_brka-ClassBCommonStockMember">BRK.B</dei:TradingSymbol>
+    <dei:SecurityExchangeName contextRef="duration_2023-05-06_to_2023-05-06_us-gaap-StatementClassOfStockAxis_brka-ClassBCommonStockMember">NYSE</dei:SecurityExchangeName>
+    <dei:Security12bTitle contextRef="duration_2023-05-06_to_2023-05-06_us-gaap-StatementClassOfStockAxis_brka-MOnePointThreeZeroZeroSeniorNotesDueTwoThousandTwentyFourMember">1.300% Senior Notes due 2024</dei:Security12bTitle>
+    <dei:TradingSymbol contextRef="duration_2023-05-06_to_2023-05-06_us-gaap-StatementClassOfStockAxis_brka-MOnePointThreeZeroZeroSeniorNotesDueTwoThousandTwentyFourMember">BRK24</dei:TradingSymbol>
+    <dei:SecurityExchangeName contextRef="duration_2023-05-06_to_2023-05-06_us-gaap-StatementClassOfStockAxis_brka-MOnePointThreeZeroZeroSeniorNotesDueTwoThousandTwentyFourMember">NYSE</dei:SecurityExchangeName>
+    <dei:Security12bTitle contextRef="duration_2023-05-06_to_2023-05-06_us-gaap-StatementClassOfStockAxis_brka-MZeroPointZeroZeroZeroSeniorNotesDueTwoThousandTwentyFiveMember">0.000% Senior Notes due 2025</dei:Security12bTitle>
+    <dei:TradingSymbol contextRef="duration_2023-05-06_to_2023-05-06_us-gaap-StatementClassOfStockAxis_brka-MZeroPointZeroZeroZeroSeniorNotesDueTwoThousandTwentyFiveMember">BRK25</dei:TradingSymbol>
+    <dei:SecurityExchangeName contextRef="duration_2023-05-06_to_2023-05-06_us-gaap-StatementClassOfStockAxis_brka-MZeroPointZeroZeroZeroSeniorNotesDueTwoThousandTwentyFiveMember">NYSE</dei:SecurityExchangeName>
+    <dei:Security12bTitle contextRef="duration_2023-05-06_to_2023-05-06_us-gaap-StatementClassOfStockAxis_brka-MOnePointOneTwoFiveSeniorNotesDueTwoThousandTwentySevenMember">1.125% Senior Notes due 2027</dei:Security12bTitle>
+    <dei:TradingSymbol contextRef="duration_2023-05-06_to_2023-05-06_us-gaap-StatementClassOfStockAxis_brka-MOnePointOneTwoFiveSeniorNotesDueTwoThousandTwentySevenMember">BRK27</dei:TradingSymbol>
+    <dei:SecurityExchangeName contextRef="duration_2023-05-06_to_2023-05-06_us-gaap-StatementClassOfStockAxis_brka-MOnePointOneTwoFiveSeniorNotesDueTwoThousandTwentySevenMember">NYSE</dei:SecurityExchangeName>
+    <dei:Security12bTitle contextRef="duration_2023-05-06_to_2023-05-06_us-gaap-StatementClassOfStockAxis_brka-MTwoPointOneFiveZeroSeniorNotesDueTwoThousandTwentyEightMember">2.150% Senior Notes due 2028</dei:Security12bTitle>
+    <dei:TradingSymbol contextRef="duration_2023-05-06_to_2023-05-06_us-gaap-StatementClassOfStockAxis_brka-MTwoPointOneFiveZeroSeniorNotesDueTwoThousandTwentyEightMember">BRK28</dei:TradingSymbol>
+    <dei:SecurityExchangeName contextRef="duration_2023-05-06_to_2023-05-06_us-gaap-StatementClassOfStockAxis_brka-MTwoPointOneFiveZeroSeniorNotesDueTwoThousandTwentyEightMember">NYSE</dei:SecurityExchangeName>
+    <dei:Security12bTitle contextRef="duration_2023-05-06_to_2023-05-06_us-gaap-StatementClassOfStockAxis_brka-MOnePointFiveZeroZeroSeniorNotesDueTwoThousandThirtyMember">1.500% Senior Notes due 2030</dei:Security12bTitle>
+    <dei:TradingSymbol contextRef="duration_2023-05-06_to_2023-05-06_us-gaap-StatementClassOfStockAxis_brka-MOnePointFiveZeroZeroSeniorNotesDueTwoThousandThirtyMember">BRK30</dei:TradingSymbol>
+    <dei:SecurityExchangeName contextRef="duration_2023-05-06_to_2023-05-06_us-gaap-StatementClassOfStockAxis_brka-MOnePointFiveZeroZeroSeniorNotesDueTwoThousandThirtyMember">NYSE</dei:SecurityExchangeName>
+    <dei:Security12bTitle contextRef="duration_2023-05-06_to_2023-05-06_us-gaap-StatementClassOfStockAxis_brka-MTwoPointZeroZeroZeroSeniorNotesDueTwoThousandThirtyFourMember">2.000% Senior Notes due 2034</dei:Security12bTitle>
+    <dei:TradingSymbol contextRef="duration_2023-05-06_to_2023-05-06_us-gaap-StatementClassOfStockAxis_brka-MTwoPointZeroZeroZeroSeniorNotesDueTwoThousandThirtyFourMember">BRK34</dei:TradingSymbol>
+    <dei:SecurityExchangeName contextRef="duration_2023-05-06_to_2023-05-06_us-gaap-StatementClassOfStockAxis_brka-MTwoPointZeroZeroZeroSeniorNotesDueTwoThousandThirtyFourMember">NYSE</dei:SecurityExchangeName>
+    <dei:Security12bTitle contextRef="duration_2023-05-06_to_2023-05-06_us-gaap-StatementClassOfStockAxis_brka-MOnePointSixTwoFiveSeniorNotesDueTwoThousandThirtyFiveMember">1.625% Senior Notes due 2035</dei:Security12bTitle>
+    <dei:TradingSymbol contextRef="duration_2023-05-06_to_2023-05-06_us-gaap-StatementClassOfStockAxis_brka-MOnePointSixTwoFiveSeniorNotesDueTwoThousandThirtyFiveMember">BRK35</dei:TradingSymbol>
+    <dei:SecurityExchangeName contextRef="duration_2023-05-06_to_2023-05-06_us-gaap-StatementClassOfStockAxis_brka-MOnePointSixTwoFiveSeniorNotesDueTwoThousandThirtyFiveMember">NYSE</dei:SecurityExchangeName>
+    <dei:Security12bTitle contextRef="duration_2023-05-06_to_2023-05-06_us-gaap-StatementClassOfStockAxis_brka-MTwoPointThreeSevenFiveSeniorNotesDueTwoThousandThirtyNineMember">2.375% Senior Notes due 2039</dei:Security12bTitle>
+    <dei:TradingSymbol contextRef="duration_2023-05-06_to_2023-05-06_us-gaap-StatementClassOfStockAxis_brka-MTwoPointThreeSevenFiveSeniorNotesDueTwoThousandThirtyNineMember">BRK39</dei:TradingSymbol>
+    <dei:SecurityExchangeName contextRef="duration_2023-05-06_to_2023-05-06_us-gaap-StatementClassOfStockAxis_brka-MTwoPointThreeSevenFiveSeniorNotesDueTwoThousandThirtyNineMember">NYSE</dei:SecurityExchangeName>
+    <dei:Security12bTitle contextRef="duration_2023-05-06_to_2023-05-06_us-gaap-StatementClassOfStockAxis_brka-MZeroPointFiveZeroZeroSeniorNotesDueTwoThousandFortyOneMember">0.500% Senior Notes due 2041</dei:Security12bTitle>
+    <dei:TradingSymbol contextRef="duration_2023-05-06_to_2023-05-06_us-gaap-StatementClassOfStockAxis_brka-MZeroPointFiveZeroZeroSeniorNotesDueTwoThousandFortyOneMember">BRK41</dei:TradingSymbol>
+    <dei:SecurityExchangeName contextRef="duration_2023-05-06_to_2023-05-06_us-gaap-StatementClassOfStockAxis_brka-MZeroPointFiveZeroZeroSeniorNotesDueTwoThousandFortyOneMember">NYSE</dei:SecurityExchangeName>
+    <dei:Security12bTitle contextRef="duration_2023-05-06_to_2023-05-06_us-gaap-StatementClassOfStockAxis_brka-MTwoPointSixTwoFiveSeniorNotesDueTwoThousandFiftyNineMember">2.625% Senior Notes due 2059</dei:Security12bTitle>
+    <dei:TradingSymbol contextRef="duration_2023-05-06_to_2023-05-06_us-gaap-StatementClassOfStockAxis_brka-MTwoPointSixTwoFiveSeniorNotesDueTwoThousandFiftyNineMember">BRK59</dei:TradingSymbol>
+    <dei:SecurityExchangeName contextRef="duration_2023-05-06_to_2023-05-06_us-gaap-StatementClassOfStockAxis_brka-MTwoPointSixTwoFiveSeniorNotesDueTwoThousandFiftyNineMember">NYSE</dei:SecurityExchangeName>
+    <dei:EntityEmergingGrowthCompany contextRef="duration_2023-05-06_to_2023-05-06">false</dei:EntityEmergingGrowthCompany>
+</xbrl>
